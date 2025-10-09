@@ -15,7 +15,7 @@ exports.handler = async function(event) {
 
     try {
         const { systemPrompt, userPrompt, responseMimeType } = JSON.parse(event.body);
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
         const payload = {
             systemInstruction: { parts: [{ text: systemPrompt }] },
