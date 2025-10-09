@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多語言學習平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom radio button styles */
+        .radio-btn-group input[type="radio"] {
+            display: none;
+        }
+        .radio-btn-group label {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            background-color: #ffffff;
+            border: 2px solid #e5e7eb;
+            font-weight: 500;
+        }
+        .radio-btn-group input[type="radio"]:checked + label {
+            background-image: linear-gradient(to right, #fb7185, #facc15);
+            color: white;
+            border-color: transparent;
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        /* Loader styles */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        .page-loader {
+             width: 50px;
+             height: 50px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .bg-dreamy {
+            background-color: #6B7280;
+            background-image: linear-gradient(180deg, #a3b0ff 0%, #6952e6 100%);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        .lang-tab {
+            transition: all 0.2s ease-in-out;
+        }
+        .lang-tab.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-dreamy text-gray-800 relative min-h-screen">
+
+    <!-- Background Decorations -->
+    <div id="dreamy-world" class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <!-- Hearts -->
+        <svg class="absolute top-1/4 left-10 w-12 h-12 text-white opacity-20 floating" style="animation-duration: 8s;" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+        </svg>
+        <svg class="absolute bottom-1/4 right-10 w-16 h-16 text-white opacity-20 floating" style="animation-duration: 10s; animation-delay: -2s;" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+        </svg>
+
+        <!-- Sparkles -->
+        <svg class="absolute top-20 right-1/4 w-8 h-8 text-yellow-200 opacity-30 floating" style="animation-duration: 5s;" fill="currentColor" viewBox="0 0 20 20">
+           <path d="M10 2.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V3.25A.75.75 0 0110 2.5zM10 13.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5a.75.75 0 01.75-.75zM3.25 10a.75.75 0 01.75-.75h3.5a.75.75 0 010 1.5H4a.75.75 0 01-.75-.75zM12.75 10a.75.75 0 01.75-.75h3.5a.75.75 0 010 1.5h-3.5a.75.75 0 01-.75-.75zM6.22 6.22a.75.75 0 011.06 0l2.47 2.47a.75.75 0 01-1.06 1.06L6.22 7.28a.75.75 0 010-1.06zM11.25 12.22a.75.75 0 011.06 0l2.47 2.47a.75.75 0 01-1.06 1.06l-2.47-2.47a.75.75 0 010-1.06zM6.22 13.78a.75.75 0 010-1.06l2.47-2.47a.75.75 0 111.06 1.06l-2.47 2.47a.75.75 0 01-1.06 0zM12.22 8.75a.75.75 0 010-1.06l2.47-2.47a.75.75 0 111.06 1.06l-2.47 2.47a.75.75 0 01-1.06 0z"/>
+        </svg>
+    </div>
+
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl relative z-10">
+        <!-- Language Switcher -->
+        <div class="absolute top-4 right-4 md:top-6 md:right-8 z-20">
+            <select id="language-switcher" class="bg-white border-2 border-blue-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                <option value="zh-Hant">繁體中文</option>
+                <option value="en">English</option>
+                <option value="vi">Tiếng Việt</option>
+                <option value="ja">日本語</option>
+            </select>
+        </div>
+
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-white flex items-center justify-center space-x-4">
+                <span>💖</span>
+                <span data-translate-key="pageTitle">多語言學習平台</span>
+                <span>✨</span>
+            </h1>
+            <p class="text-lg text-indigo-200 mt-2" data-translate-key="pageSubtitle">開始今天的學習冒險吧！</p>
+        </header>
+
+        <!-- Step 1: Selection Form -->
+        <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 mb-8 border-2 border-white/20">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Age Selection -->
+                <div>
+                    <h3 class="font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="ageTitle">1. 選擇年齡</h3>
+                    <div id="age-group" class="radio-btn-group grid grid-cols-3 gap-2">
+                        <input type="radio" id="age-under-5" name="age" value="5歲以下" checked><label for="age-under-5" class="block text-center rounded-lg p-3 text-sm" data-translate-key="age_under_5">5歲以下</label>
+                        <input type="radio" id="age-6-10" name="age" value="6-10歲"><label for="age-6-10" class="block text-center rounded-lg p-3 text-sm" data-translate-key="age_6_10">6-10歲</label>
+                        <input type="radio" id="age-10-15" name="age" value="10-15歲"><label for="age-10-15" class="block text-center rounded-lg p-3 text-sm" data-translate-key="age_10_15">10-15歲</label>
+                        <div class="grid grid-cols-2 col-span-3 gap-2">
+                            <input type="radio" id="age-15-20" name="age" value="15-20歲"><label for="age-15-20" class="block text-center rounded-lg p-3 text-sm" data-translate-key="age_15_20">15-20歲</label>
+                            <input type="radio" id="age-over-20" name="age" value="20歲以上"><label for="age-over-20" class="block text-center rounded-lg p-3 text-sm" data-translate-key="age_over_20">20歲以上</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Subject Selection -->
+                <div>
+                    <h3 class="font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="subjectTitle">2. 選擇課程類型</h3>
+                    <div id="subject-group" class="radio-btn-group grid grid-cols-2 gap-2">
+                        <input type="radio" id="subject-kids-en" name="subject" value="KidsEnglish" checked><label for="subject-kids-en" class="block text-center rounded-lg p-3 text-sm" data-translate-key="subjectKidsEn">兒童英文</label>
+                        <input type="radio" id="subject-adult-en" name="subject" value="AdultEnglish"><label for="subject-adult-en" class="block text-center rounded-lg p-3 text-sm" data-translate-key="subjectAdultEn">成人英文</label>
+                        <input type="radio" id="subject-sci" name="subject" value="Science"><label for="subject-sci" class="block text-center rounded-lg p-3 text-sm" data-translate-key="subjectSci">科學</label>
+                        <input type="radio" id="subject-math" name="subject" value="Math"><label for="subject-math" class="block text-center rounded-lg p-3 text-sm" data-translate-key="subjectMath">數學</label>
+                        <input type="radio" id="subject-hist" name="subject" value="History"><label for="subject-hist" class="block text-center rounded-lg p-3 text-sm" data-translate-key="subjectHist">歷史</label>
+                        <input type="radio" id="subject-geo" name="subject" value="Geography"><label for="subject-geo" class="block text-center rounded-lg p-3 text-sm" data-translate-key="subjectGeo">地理</label>
+                    </div>
+                </div>
+                <!-- Lesson Type Selection -->
+                <div>
+                    <h3 class="font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="typeTitle">3. 選擇類型</h3>
+                    <div id="type-group" class="radio-btn-group grid grid-cols-1 gap-2">
+                        <input type="radio" id="type-course" name="lessonType" value="教學課程" checked><label for="type-course" class="block text-center rounded-lg p-3 text-sm" data-translate-key="typeCourse">教學課程</label>
+                        <input type="radio" id="type-story" name="lessonType" value="啟發故事"><label for="type-story" class="block text-center rounded-lg p-3 text-sm" data-translate-key="typeStory">啟發故事</label>
+                        <input type="radio" id="type-vocab" name="lessonType" value="5個字彙與例句"><label for="type-vocab" class="block text-center rounded-lg p-3 text-sm" data-translate-key="typeVocab">5個字彙與例句</label>
+                        <input type="radio" id="type-qa" name="lessonType" value="AI提問"><label for="type-qa" class="block text-center rounded-lg p-3 text-sm" data-translate-key="typeQA">AI提問</label>
+                        <input type="radio" id="type-podcast" name="lessonType" value="雙人博客"><label for="type-podcast" class="block text-center rounded-lg p-3 text-sm" data-translate-key="typePodcast">雙人博客</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Topic Selection Area -->
+            <div id="topic-selection-area" class="mt-8 pt-6 border-t-2 border-dashed border-blue-200/50">
+                 <h3 class="font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="topicTitle">4. 選擇課程主題</h3>
+                 <select id="topic-select" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 bg-white">
+                 </select>
+                 <div id="custom-topic-wrapper" class="hidden mt-4">
+                     <input id="custom-topic-input" type="text" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500" placeholder="請輸入自訂主題" data-translate-key="customTopicPlaceholder">
+                 </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <button id="generate-lesson-btn" type="button" class="w-full md:w-1/2 bg-gradient-to-r from-emerald-400 to-cyan-500 text-white font-bold py-3 px-6 rounded-lg hover:from-emerald-500 hover:to-cyan-600 focus:outline-none focus:ring-4 focus:ring-cyan-300 transition-all transform hover:scale-105 shadow-lg">
+                    <span data-translate-key="generateLessonBtn">🚀 生成課程內容</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Results Area -->
+        <div id="result-area">
+             <div id="loading-indicator" class="hidden text-center py-8">
+                <div class="mx-auto loader page-loader"></div>
+                <p class="text-white font-medium mt-4 text-lg" data-translate-key="loadingText">AI Agent 正在生成課程，請稍候...</p>
+            </div>
+            <div id="error-message" class="hidden mt-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
+                <p class="font-bold" data-translate-key="errorTitle">發生錯誤</p>
+                <p id="error-text"></p>
+            </div>
+            <div id="lesson-container" class="space-y-6">
+                <!-- Generated lesson pages will be injected here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Modal -->
+    <div id="image-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="relative bg-white p-2 rounded-lg max-w-4xl w-full max-h-full">
+            <button id="close-modal-btn" class="absolute -top-4 -right-4 bg-white rounded-full p-2 text-gray-700 hover:text-black z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <img id="modal-image" src="" class="max-w-full max-h-[85vh] object-contain mx-auto" alt="Enlarged lesson image">
+        </div>
+    </div>
+
+
+    <script type="module">
+        // --- Globals ---
+        const API_KEY = ""; // Will be provided by the Canvas environment
+        let currentLesson = null;
+        let currentLang = 'zh-Hant';
+        const generatedMedia = {}; // To store generated blobs and base64 data
+
+        const topicsData = {
+            'KidsEnglish': ['Animals', 'Family', 'Colors', 'Numbers', 'Food', 'Clothing', 'BodyParts', 'Weather', 'Feelings', 'School'],
+            'AdultEnglish': ['BusinessMeetings', 'EmailWriting', 'JobInterviews', 'TravelEnglish', 'SmallTalk', 'Presentations', 'Negotiations', 'Marketing', 'Finance', 'Retail'],
+            'Science': ['Plants', 'Animals', 'HumanBody', 'SolarSystem', 'Weather', 'WaterCycle', 'Dinosaurs', 'Magnets', 'FiveSenses', 'Seasons'],
+            'Math': ['Counting', 'Addition', 'Subtraction', 'Shapes', 'Patterns', 'Measurement', 'Time', 'Money', 'ComparingNumbers', 'SimpleFractions'],
+            'History': ['ChineseHistory', 'VietnameseHistory', 'AncientEgypt', 'AncientGreeceRome', 'Renaissance', 'AgeOfDiscovery', 'IndustrialRevolution', 'WWI', 'WWII', 'ModernTechHistory'],
+            'Geography': ['WorldCapitals', 'FamousLandmarks', 'OceansContinents', 'MountainRanges', 'MajorRivers', 'Deserts', 'Rainforests', 'TectonicPlates', 'ClimateZones', 'HumanMigration']
+        };
+
+        // --- Translation Data ---
+        const translations = {
+            'zh-Hant': {
+                pageTitle: '多語言學習平台',
+                pageSubtitle: '開始今天的學習冒險吧！',
+                ageTitle: '1. 選擇年齡',
+                age_under_5: '5歲以下', age_6_10: '6-10歲', age_10_15: '10-15歲', age_15_20: '15-20歲', age_over_20: '20歲以上',
+                subjectTitle: '2. 選擇課程類型',
+                subjectKidsEn: '兒童英文', subjectAdultEn: '成人英文', subjectSci: '科學', subjectMath: '數學', subjectHist: '歷史', subjectGeo: '地理',
+                typeTitle: '3. 選擇類型',
+                typeCourse: '教學課程',
+                typeStory: '啟發故事',
+                typeVocab: '5個字彙與例句',
+                typeQA: 'AI提問',
+                typePodcast: '雙人博客',
+                topicTitle: '4. 選擇課程主題',
+                customTopicPlaceholder: '請輸入自訂主題',
+                customTopicOption: '自訂主題...',
+                generateLessonBtn: '🚀 生成課程內容',
+                loadingText: 'AI Agent 正在生成課程，請稍候...',
+                errorTitle: '發生錯誤',
+                lessonPageTitle: '第 {pageNum} 頁: {pageType}',
+                vocabTitle: '重點字彙',
+                vocabWord: '單字',
+                vocabPhonetic: '音標',
+                vocabTranslation: '翻譯',
+                vocabExample: '例句',
+                imagePlaceholder: '點擊按鈕生成圖片',
+                generateImageBtn: '生成圖像',
+                generateAudioBtnEn: '生成英文語音',
+                generateAudioBtnVi: '生成越南文語音',
+                generateAudioBtnZh: '生成中文語音',
+                generateAudioBtnJa: '生成日語語音',
+                downloadAudioBtn: '下載語音 (WAV)',
+                imageError: '圖片生成失敗',
+                audioError: '語音生成失敗',
+                lessonError: '課程生成失敗: {message}',
+                topics: {
+                    'KidsEnglish': ['動物', '家庭', '顏色', '數字', '食物', '衣服', '身體部位', '天氣', '情緒', '學校'],
+                    'AdultEnglish': ['商務會議', '郵件寫作', '工作面試', '旅遊英文', '日常閒聊', '簡報技巧', '商業談判', '市場行銷', '財經英文', '零售應用'],
+                    'Science': ['植物', '動物', '人體', '太陽系', '天氣', '水循環', '恐龍', '磁鐵', '五種感官', '季節'],
+                    'Math': ['數數', '加法', '減法', '形狀', '規律', '測量', '時間', '金錢', '數字比較', '簡單分數'],
+                    'History': ['中國歷史', '越南歷史', '古埃及文明', '古希臘羅馬', '文藝復興', '大航海時代', '工業革命', '第一次世界大戰', '第二次世界大戰', '現代科技史'],
+                    'Geography': ['世界首都', '著名地標', '海洋與大陸', '主要山脈', '世界主要河流', '世界沙漠', '熱帶雨林', '板塊構造', '氣候帶', '人類遷徙']
+                }
+            },
+            'en': {
+                pageTitle: 'Multilingual Learning Platform',
+                pageSubtitle: "Let's start today's learning adventure!",
+                ageTitle: '1. Select Age',
+                age_under_5: 'Under 5', age_6_10: '6-10 years', age_10_15: '10-15 years', age_15_20: '15-20 years', age_over_20: 'Over 20',
+                subjectTitle: '2. Select Course Type',
+                subjectKidsEn: "Kids' English", subjectAdultEn: "Adult English", subjectSci: 'Science', subjectMath: 'Math', subjectHist: 'History', subjectGeo: 'Geography',
+                typeTitle: '3. Select Type',
+                typeCourse: 'Teaching Course',
+                typeStory: 'Inspirational Story',
+                typeVocab: '5 Vocab & Sentences',
+                typeQA: 'AI Questions',
+                typePodcast: 'Dual-host Podcast',
+                topicTitle: '4. Select Course Topic',
+                customTopicPlaceholder: 'Enter custom topic',
+                customTopicOption: 'Custom Topic...',
+                generateLessonBtn: '🚀 Generate Lesson Content',
+                loadingText: 'AI Agent is generating the course, please wait...',
+                errorTitle: 'An Error Occurred',
+                lessonPageTitle: 'Page {pageNum}: {pageType}',
+                vocabTitle: 'Key Vocabulary',
+                vocabWord: 'Word',
+                vocabPhonetic: 'Phonetic',
+                vocabTranslation: 'Translation',
+                vocabExample: 'Example',
+                imagePlaceholder: 'Click button to generate image',
+                generateImageBtn: 'Generate Image',
+                generateAudioBtnEn: 'Generate English Audio',
+                generateAudioBtnVi: 'Generate Vietnamese Audio',
+                generateAudioBtnZh: 'Generate Chinese Audio',
+                generateAudioBtnJa: 'Generate Japanese Audio',
+                downloadAudioBtn: 'Download Audio (WAV)',
+                imageError: 'Image generation failed',
+                audioError: 'Audio generation failed',
+                lessonError: 'Failed to generate lesson: {message}',
+                topics: {
+                    'KidsEnglish': topicsData.KidsEnglish,
+                    'AdultEnglish': ['Business Meetings', 'Email Writing', 'Job Interviews', 'Travel English', 'Small Talk', 'Presentations', 'Negotiations', 'Marketing', 'Finance', 'Retail'],
+                    'Science': topicsData.Science,
+                    'Math': topicsData.Math,
+                    'History': ['Chinese History', 'Vietnamese History', 'Ancient Egypt', 'Ancient Greece & Rome', 'The Renaissance', 'Age of Discovery', 'Industrial Revolution', 'World War I', 'World War II', 'History of Modern Tech'],
+                    'Geography': ['World Capitals', 'Famous Landmarks', 'Oceans & Continents', 'Mountain Ranges', 'Major Rivers', 'Deserts', 'Rainforests', 'Tectonic Plates', 'Climate Zones', 'Human Migration']
+                }
+            },
+            'vi': {
+                pageTitle: 'Nền tảng học tập đa ngôn ngữ',
+                pageSubtitle: 'Hãy bắt đầu cuộc phiêu lưu học tập hôm nay!',
+                ageTitle: '1. Chọn độ tuổi',
+                age_under_5: 'Dưới 5 tuổi', age_6_10: '6-10 tuổi', age_10_15: '10-15 tuổi', age_15_20: '15-20 tuổi', age_over_20: 'Trên 20 tuổi',
+                subjectTitle: '2. Chọn loại khóa học',
+                subjectKidsEn: 'Tiếng Anh trẻ em', subjectAdultEn: 'Tiếng Anh người lớn', subjectSci: 'Khoa học', subjectMath: 'Toán học', subjectHist: 'Lịch sử', subjectGeo: 'Địa lý',
+                typeTitle: '3. Chọn loại',
+                typeCourse: 'Bài giảng',
+                typeStory: 'Câu chuyện truyền cảm hứng',
+                typeVocab: '5 từ vựng & câu ví dụ',
+                typeQA: 'Câu hỏi AI',
+                typePodcast: 'Podcast hai người',
+                topicTitle: '4. Chọn chủ đề khóa học',
+                customTopicPlaceholder: 'Nhập chủ đề tùy chỉnh',
+                customTopicOption: 'Chủ đề tùy chỉnh...',
+                generateLessonBtn: '🚀 Tạo nội dung khóa học',
+                loadingText: 'AI Agent đang tạo khóa học, vui lòng đợi...',
+                errorTitle: 'Đã xảy ra lỗi',
+                lessonPageTitle: 'Trang {pageNum}: {pageType}',
+                vocabTitle: 'Từ vựng chính',
+                vocabWord: 'Từ',
+                vocabPhonetic: 'Phiên âm',
+                vocabTranslation: 'Bản dịch',
+                vocabExample: 'Ví dụ',
+                imagePlaceholder: 'Nhấp vào nút để tạo hình ảnh',
+                generateImageBtn: 'Tạo hình ảnh',
+                generateAudioBtnEn: 'Tạo âm thanh Tiếng Anh',
+                generateAudioBtnVi: 'Tạo âm thanh Tiếng Việt',
+                generateAudioBtnZh: 'Tạo âm thanh Tiếng Trung',
+                generateAudioBtnJa: 'Tạo âm thanh Tiếng Nhật',
+                downloadAudioBtn: 'Tải âm thanh (WAV)',
+                imageError: 'Tạo hình ảnh thất bại',
+                audioError: 'Tạo âm thanh thất bại',
+                lessonError: 'Không thể tạo bài học: {message}',
+                topics: {
+                    'KidsEnglish': ['Động vật', 'Gia đình', 'Màu sắc', 'Con số', 'Thức ăn', 'Quần áo', 'Các bộ phận cơ thể', 'Thời tiết', 'Cảm xúc', 'Trường học'],
+                    'AdultEnglish': ['Họp kinh doanh', 'Viết email', 'Phỏng vấn xin việc', 'Tiếng Anh du lịch', 'Nói chuyện phiếm', 'Thuyết trình', 'Đàm phán', 'Tiếp thị', 'Tài chính', 'Bán lẻ'],
+                    'Science': ['Thực vật', 'Động vật', 'Cơ thể người', 'Hệ mặt trời', 'Thời tiết', 'Vòng tuần hoàn nước', 'Khủng long', 'Nam châm', 'Năm giác quan', 'Các mùa'],
+                    'Math': ['Đếm', 'Phép cộng', 'Phép trừ', 'Hình dạng', 'Mẫu', 'Đo lường', 'Thời gian', 'Tiền bạc', 'So sánh số', 'Phân số đơn giản'],
+                    'History': ['Lịch sử Trung Quốc', 'Lịch sử Việt Nam', 'Văn minh Ai Cập cổ đại', 'Hy Lạp và La Mã cổ đại', 'Phục hưng', 'Thời đại khám phá', 'Cách mạng công nghiệp', 'Thế chiến thứ nhất', 'Thế chiến thứ hai', 'Lịch sử công nghệ hiện đại'],
+                    'Geography': ['Thủ đô thế giới', 'Địa danh nổi tiếng', 'Đại dương và Lục địa', 'Dãy núi', 'Sông lớn', 'Sa mạc', 'Rừng nhiệt đới', 'Mảng kiến tạo', 'Vùng khí hậu', 'Di cư của con người']
+                }
+            },
+            'ja': {
+                pageTitle: '多言語学習プラットフォーム',
+                pageSubtitle: '今日の学習冒険を始めましょう！',
+                ageTitle: '1. 年齢を選択',
+                age_under_5: '5歳以下', age_6_10: '6-10歳', age_10_15: '10-15歳', age_15_20: '15-20歳', age_over_20: '20歳以上',
+                subjectTitle: '2. コースタイプを選択',
+                subjectKidsEn: '子供向け英語', subjectAdultEn: '大人向け英語', subjectSci: '科学', subjectMath: '数学', subjectHist: '歴史', subjectGeo: '地理',
+                typeTitle: '3. タイプを選択',
+                typeCourse: '教育コース',
+                typeStory: '感動的な物語',
+                typeVocab: '5つの語彙と例文',
+                typeQA: 'AIからの質問',
+                typePodcast: '二人対談ポッドキャスト',
+                topicTitle: '4. コーストピックを選択',
+                customTopicPlaceholder: 'カスタムトピックを入力',
+                customTopicOption: 'カスタムトピック...',
+                generateLessonBtn: '🚀 レッスン内容を生成',
+                loadingText: 'AIエージェントがコースを生成中です。しばらくお待ちください...',
+                errorTitle: 'エラーが発生しました',
+                lessonPageTitle: 'ページ {pageNum}: {pageType}',
+                vocabTitle: '重要語彙',
+                vocabWord: '単語',
+                vocabPhonetic: '発音記号',
+                vocabTranslation: '翻訳',
+                vocabExample: '例文',
+                imagePlaceholder: 'ボタンをクリックして画像を生成',
+                generateImageBtn: '画像を生成',
+                generateAudioBtnEn: '英語の音声を生成',
+                generateAudioBtnVi: 'ベトナム語の音声を生成',
+                generateAudioBtnZh: '中国語の音声を生成',
+                generateAudioBtnJa: '日本語の音声を生成',
+                downloadAudioBtn: '音声をダウンロード (WAV)',
+                imageError: '画像生成に失敗しました',
+                audioError: '音声生成に失敗しました',
+                lessonError: 'レッスン生成に失敗しました: {message}',
+                topics: {
+                    'KidsEnglish': ['動物', '家族', '色', '数字', '食べ物', '服', '体の部位', '天気', '感情', '学校'],
+                    'AdultEnglish': ['ビジネス会議', 'メール作成', '就職の面接', '旅行英会話', '世間話', 'プレゼンテーション', '交渉', 'マーケティング', '金融', '小売'],
+                    'Science': ['植物', '動物', '人体', '太陽系', '天気', '水の循環', '恐竜', '磁石', '五感', '季節'],
+                    'Math': ['数えること', '足し算', '引き算', '形', 'パターン', '測定', '時間', 'お金', '数字の比較', '簡単な分数'],
+                    'History': ['中国の歴史', 'ベトナムの歴史', '古代エジプト文明', '古代ギリシャ・ローマ', 'ルネサンス', '大航海時代', '産業革命', '第一次世界大戦', '第二次世界大戦', '現代技術史'],
+                    'Geography': ['世界の首都', '有名なランドマーク', '海洋と大陸', '山脈', '主要な川', '砂漠', '熱帯雨林', '構造プレート', '気候帯', '人類の移動']
+                }
+            }
+        };
+
+        // --- DOM Elements ---
+        const generateLessonBtn = document.getElementById('generate-lesson-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const lessonContainer = document.getElementById('lesson-container');
+        const languageSwitcher = document.getElementById('language-switcher');
+        const subjectGroup = document.getElementById('subject-group');
+        const topicSelect = document.getElementById('topic-select');
+        const customTopicWrapper = document.getElementById('custom-topic-wrapper');
+        const customTopicInput = document.getElementById('custom-topic-input');
+        const imageModal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        
+        // --- Event Listeners ---
+        generateLessonBtn.addEventListener('click', handleGenerateLesson);
+        languageSwitcher.addEventListener('change', (event) => setLanguage(event.target.value));
+        subjectGroup.addEventListener('change', (event) => {
+            if(event.target.name === 'subject'){
+                updateTopicSelection(event.target.value);
+            }
+        });
+        topicSelect.addEventListener('change', (event) => {
+            customTopicWrapper.classList.toggle('hidden', event.target.value !== 'custom');
+        });
+        closeModalBtn.addEventListener('click', closeModal);
+        imageModal.addEventListener('click', (e) => {
+            if (e.target === imageModal) {
+                closeModal();
+            }
+        });
+
+        // --- Modal Functions ---
+        function openModal(imageUrl) {
+            modalImage.src = imageUrl;
+            imageModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            imageModal.classList.add('hidden');
+            modalImage.src = ''; 
+        }
+
+        // --- Translation & UI Update Functions ---
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-translate-key]').forEach(el => {
+                const key = el.dataset.translateKey;
+                const translation = translations[lang][key];
+                if (translation) {
+                     if (el.placeholder) {
+                        el.placeholder = translation;
+                    } else {
+                        const span = el.querySelector('span');
+                        if (span) {
+                            span.innerHTML = translation;
+                        } else {
+                            el.innerHTML = translation;
+                        }
+                    }
+                }
+            });
+            updateTopicSelection(document.querySelector('input[name="subject"]:checked').value);
+            if (currentLesson) {
+                renderLesson();
+            }
+        }
+
+        function updateTopicSelection(subject) {
+            const t = translations[currentLang];
+            const subjectTopics = t.topics[subject];
+            
+            topicSelect.innerHTML = '';
+            subjectTopics.forEach(topicText => {
+                const option = document.createElement('option');
+                option.value = topicText;
+                option.textContent = topicText;
+                topicSelect.appendChild(option);
+            });
+            const customOption = document.createElement('option');
+            customOption.value = 'custom';
+            customOption.textContent = t.customTopicOption;
+            topicSelect.appendChild(customOption);
+            customTopicWrapper.classList.add('hidden');
+        }
+
+
+        // --- Core Functions ---
+        async function handleGenerateLesson() {
+            const age = document.querySelector('input[name="age"]:checked').value;
+            let topic = topicSelect.value;
+            if (topic === 'custom') {
+                topic = customTopicInput.value;
+            }
+            if (!topic) {
+                showError("請選擇或輸入一個課程主題。");
+                return;
+            }
+            const lessonType = document.querySelector('input[name="lessonType"]:checked').value;
+            const prompt = `為一個年齡介於「${age}」的學習者, 生成一個關於「${topic}」的「${lessonType}」。課程內容請務必同時提供英文、越南文、繁體中文、以及日文的翻譯。`;
+            
+            setLoading(true);
+            hideError();
+            lessonContainer.innerHTML = '';
+            currentLesson = null;
+            Object.keys(generatedMedia).forEach(key => delete generatedMedia[key]);
+
+            try {
+                const systemPrompt = `You are a multilingual educational content generator. Your task is to create content based on user specifications.
+
+                User will specify: 1. Age Range 2. Topic 3. Lesson Type.
+                
+                Lesson Types:
+                1. "教學課程" (Teaching Course): Create a 3-5 page lesson plan (intro, activity, outro).
+                2. "啟發故事" (Inspirational Story): Create a single-page short story.
+                3. "5個字彙與例句" (5 Vocab & Sentences): Create a single page with 5 vocab words and example sentences.
+                4. "AI提問" (AI Questions): Create a single page with 3-5 questions about the topic.
+                5. "雙人博客" (Dual-host Podcast): Create a single-page podcast script with two hosts (Host A, Host B) discussing the topic.
+
+                Output JSON Structure:
+                {
+                  "lesson_id": "auto_generated_uuid", "child_age_range": "<age_range_string>", "theme": "<topic>", "languages": ["EN", "VI", "ZH-TW", "JA"], "lesson_type": "<type>",
+                  "pages": [
+                    {
+                      "page_number": 1, "type": "...",
+                      "text": {"EN": "...", "VI": "...", "ZH-TW": "...", "JA": "..."},
+                      "image_prompt": "...",
+                      "vocabulary": [
+                        { 
+                          "word": "example", "phonetic": "/ɪɡˈzæmpəl/", 
+                          "translation": { "VI": "ví dụ", "ZH-TW": "例子", "JA": "例" },
+                          "example_sentence": { "EN": "...", "VI": "...", "ZH-TW": "...", "JA": "..." }
+                        }
+                      ]
+                    }
+                  ]
+                }
+                CRITICAL RULES:
+                - Adjust content complexity based on the age range. For '20歲以上', use adult-level concepts.
+                - For each page, select 5 key English words from the 'text.EN' content.
+                - In the 'text.EN' string, wrap these 5 words in <b> tags.
+                - Populate the 'vocabulary' array with these 5 words, including phonetic (IPA), translations (VI, ZH-TW, JA), and an example_sentence object with sentences in all 4 languages.
+                - For the "雙人博客" type, format the text with "Host A:" and "Host B:" prefixes.
+                - The entire response MUST be a single, valid JSON object without markdown.`;
+
+                const lessonJsonText = await callGenerativeAPI(systemPrompt, prompt, "application/json");
+                currentLesson = JSON.parse(lessonJsonText);
+                renderLesson();
+
+            } catch (err) {
+                console.error("Lesson Generation Error:", err);
+                const errorMsg = translations[currentLang].lessonError.replace('{message}', err.message);
+                showError(errorMsg);
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        function createVocabularyHtmlForLang(vocabulary, lang) {
+            if (!vocabulary || vocabulary.length === 0) return '';
+            const t = translations[currentLang];
+            const langMap = {'EN': 'EN', 'VI': 'VI', 'ZH-TW': 'ZH-TW', 'JA': 'JA'};
+            const targetLang = langMap[lang];
+
+            const vocabItemsHtml = vocabulary.map(item => `
+                <div class="py-2">
+                    <div class="flex items-baseline">
+                        <strong class="text-indigo-600 mr-2">${item.word}</strong>
+                        <span class="text-gray-500">${item.phonetic}</span>
+                    </div>
+                    <div class="text-sm text-gray-700 ml-2">
+                        <p><strong class="font-medium">${t.vocabTranslation}:</strong> ${item.translation[targetLang]}</p>
+                        <p><strong class="font-medium">${t.vocabExample}:</strong> ${item.example_sentence[targetLang]}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="mt-6 pt-4 border-t border-dashed border-blue-200">
+                    <h4 class="font-semibold text-base mb-2 text-indigo-700">${t.vocabTitle}</h4>
+                    <div>${vocabItemsHtml}</div>
+                </div>
+            `;
+        }
+
+
+        function renderLesson() {
+            if (!currentLesson || !currentLesson.pages) return;
+            const t = translations[currentLang];
+            
+            const pagesHtml = currentLesson.pages.map((page, index) => {
+                const pageTitle = t.lessonPageTitle.replace('{pageNum}', page.page_number).replace('{pageType}', page.type);
+                
+                return `
+                <div class="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-2xl border-2 border-white">
+                    <div class="flex justify-between items-center mb-4">
+                         <h3 class="text-xl font-bold text-blue-700">${pageTitle}</h3>
+                         <span class="text-sm bg-yellow-200 text-yellow-800 font-medium px-3 py-1 rounded-full">${currentLesson.theme}</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Text Content with Tabs -->
+                        <div>
+                            <div class="border-b border-gray-200">
+                                <nav id="lang-tabs-${index}" class="-mb-px flex space-x-4" aria-label="Tabs">
+                                    <button data-lang="EN" class="lang-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 active">English</button>
+                                    <button data-lang="VI" class="lang-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Tiếng Việt</button>
+                                    <button data-lang="ZH-TW" class="lang-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">繁體中文</button>
+                                    <button data-lang="JA" class="lang-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">日本語</button>
+                                </nav>
+                            </div>
+                            <div id="lang-content-${index}" class="prose max-w-none py-4">
+                                <div data-lang-panel="EN" class=""><p>${page.text.EN}</p>${createVocabularyHtmlForLang(page.vocabulary, 'EN')}</div>
+                                <div data-lang-panel="VI" class="hidden"><p>${page.text.VI}</p>${createVocabularyHtmlForLang(page.vocabulary, 'VI')}</div>
+                                <div data-lang-panel="ZH-TW" class="hidden"><p>${page.text['ZH-TW']}</p>${createVocabularyHtmlForLang(page.vocabulary, 'ZH-TW')}</div>
+                                <div data-lang-panel="JA" class="hidden"><p>${page.text.JA || ''}</p>${createVocabularyHtmlForLang(page.vocabulary, 'JA')}</div>
+                            </div>
+                        </div>
+
+
+                        <!-- Media Generation -->
+                        <div class="space-y-4">
+                             <div id="image-container-${index}" class="w-full aspect-video bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                                <span data-translate-key="imagePlaceholder">${t.imagePlaceholder}</span>
+                             </div>
+                             <div id="image-controls-${index}" class="flex gap-2">
+                                <button type="button" class="generate-image-btn flex-grow py-2 px-4 bg-gradient-to-r from-pink-500 to-orange-400 text-white rounded-lg hover:from-pink-600 hover:to-orange-500" data-index="${index}" data-translate-key="generateImageBtn">${t.generateImageBtn}</button>
+                             </div>
+                             
+                             <div id="audio-container-${index}" class="mt-4 space-y-2"></div>
+                             <div id="audio-controls-${index}" class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                                <button type="button" class="generate-audio-btn py-2 px-4 bg-sky-500 text-white rounded-lg hover:bg-sky-600 text-sm" data-index="${index}" data-lang="EN" data-translate-key="generateAudioBtnEn">${t.generateAudioBtnEn}</button>
+                                <button type="button" class="generate-audio-btn py-2 px-4 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 text-sm" data-index="${index}" data-lang="VI" data-translate-key="generateAudioBtnVi">${t.generateAudioBtnVi}</button>
+                                <button type="button" class="generate-audio-btn py-2 px-4 bg-violet-500 text-white rounded-lg hover:bg-violet-600 text-sm" data-index="${index}" data-lang="ZH-TW" data-translate-key="generateAudioBtnZh">${t.generateAudioBtnZh}</button>
+                                <button type="button" class="generate-audio-btn py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm" data-index="${index}" data-lang="JA" data-translate-key="generateAudioBtnJa">${t.generateAudioBtnJa}</button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+            lessonContainer.innerHTML = pagesHtml;
+            
+            document.querySelectorAll('.generate-image-btn').forEach(btn => btn.addEventListener('click', handleGenerateImage));
+            document.querySelectorAll('.generate-audio-btn').forEach(btn => btn.addEventListener('click', handleGenerateAudio));
+
+            // Setup tab functionality for each lesson page
+            currentLesson.pages.forEach((page, index) => {
+                const tabContainer = document.getElementById(`lang-tabs-${index}`);
+                const contentContainer = document.getElementById(`lang-content-${index}`);
+                if (tabContainer && contentContainer) {
+                    tabContainer.addEventListener('click', (event) => {
+                        if (event.target.matches('.lang-tab')) {
+                            const lang = event.target.dataset.lang;
+                            
+                            // Update tabs
+                            tabContainer.querySelectorAll('.lang-tab').forEach(tab => {
+                                tab.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                                tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                            });
+                            event.target.classList.add('active', 'border-blue-500', 'text-blue-600');
+                            event.target.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+
+                            // Update content
+                            contentContainer.querySelectorAll('[data-lang-panel]').forEach(panel => {
+                                panel.classList.toggle('hidden', panel.dataset.langPanel !== lang);
+                            });
+                        }
+                    });
+                    // Activate the first tab by default
+                    const firstTab = tabContainer.querySelector('.lang-tab[data-lang="EN"]');
+                    if (firstTab) firstTab.click();
+                }
+            });
+        }
+
+       async function handleGenerateImage(event) {
+            const index = event.target.dataset.index;
+            const page = currentLesson.pages[index];
+            const container = document.getElementById(`image-container-${index}`);
+            const controls = document.getElementById(`image-controls-${index}`);
+            const button = event.target;
+
+            button.disabled = true;
+            container.innerHTML = `<div class="loader"></div>`;
+
+            try {
+                const base64Data = await callImageAPI(page.image_prompt);
+                const imageUrl = `data:image/png;base64,${base64Data}`;
+                generatedMedia[`image-${index}`] = imageUrl;
+
+                const imgElement = document.createElement('img');
+                imgElement.src = imageUrl;
+                imgElement.className = "rounded-lg object-contain w-full h-full cursor-pointer";
+                imgElement.alt = `Generated image for ${currentLesson.theme}`;
+                imgElement.addEventListener('click', () => openModal(imageUrl));
+
+                container.innerHTML = '';
+                container.appendChild(imgElement);
+                
+                if (controls) {
+                    controls.innerHTML = '';
+                }
+
+            } catch (err) {
+                console.error("Image Generation Error:", err);
+                container.innerHTML = `<span class="text-red-500">${err.message}</span>`;
+                button.disabled = false;
+            }
+        }
+
+        function getVoiceConfigForAge(age) {
+            switch(age) {
+                case '5歲以下':
+                    return { voiceName: 'Leda', promptPrefix: 'Say in a cheerful, friendly, and slightly slower voice:' };
+                case '6-10歲':
+                    return { voiceName: 'Callirrhoe', promptPrefix: 'Say in an encouraging and clear voice:' };
+                case '10-15歲':
+                     return { voiceName: 'Aoede', promptPrefix: 'Say clearly:' };
+                case '15-20歲':
+                    return { voiceName: 'Kore', promptPrefix: 'Say in an informative tone:' };
+                case '20歲以上':
+                    return { voiceName: 'Orus', promptPrefix: 'Say in a professional tone:' };
+                default:
+                    return { voiceName: 'Kore', promptPrefix: 'Say clearly:' };
+            }
+        }
+
+
+        async function handleGenerateAudio(event) {
+            const index = event.target.dataset.index;
+            const lang = event.target.dataset.lang;
+            const page = currentLesson.pages[index];
+            const container = document.getElementById(`audio-container-${index}`);
+            const button = event.target;
+            
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.innerHTML = `<div class="loader mx-auto" style="width:20px; height:20px; border-width:2px;"></div>`;
+            
+            try {
+                const textToSpeak = page.text[lang];
+                if (!textToSpeak) throw new Error(`No text found for language: ${lang}`);
+                
+                let payload;
+                const lessonType = currentLesson.lesson_type;
+                const age = currentLesson.child_age_range;
+
+                if (lessonType === '雙人博客' || lessonType === 'Dual-host Podcast' || lessonType === 'Podcast hai người' || lessonType === '二人対談ポッドキャスト') {
+                     payload = {
+                        contents: [{
+                            parts: [{ text: `TTS the following conversation: \n${textToSpeak}` }]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["AUDIO"],
+                            speechConfig: {
+                                multiSpeakerVoiceConfig: {
+                                    speakerVoiceConfigs: [
+                                        { speaker: "Host A", voiceConfig: { prebuiltVoiceConfig: { voiceName: "Orus" } } }, // Male-sounding
+                                        { speaker: "Host B", voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }  // Female-sounding
+                                    ]
+                                }
+                            }
+                        },
+                        model: "gemini-2.5-flash-preview-tts"
+                    };
+                } else {
+                    const { voiceName, promptPrefix } = getVoiceConfigForAge(age);
+                    payload = {
+                      contents: [{ parts: [{ text: `${promptPrefix} ${textToSpeak}` }] }],
+                      generationConfig: { 
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                           voiceConfig: {
+                               prebuiltVoiceConfig: { voiceName: voiceName }
+                           }
+                        }
+                      }, 
+                      model: "gemini-2.5-flash-preview-tts"
+                    };
+                }
+                
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.error?.message || `API Error: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                const audioData = result?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                if (!audioData) throw new Error("No audio data returned");
+                
+                const pcmData = base64ToArrayBuffer(audioData);
+                const pcm16 = new Int16Array(pcmData);
+                const wavBlob = pcmToWav(pcm16, 24000);
+                const audioUrl = URL.createObjectURL(wavBlob);
+                const mediaKey = `audio-${index}-${lang}`;
+                generatedMedia[mediaKey] = audioUrl;
+                
+                if (container) {
+                    const existingPlayer = container.querySelector(`[data-lang="${lang}"]`);
+                    if(existingPlayer) existingPlayer.remove();
+
+                    const playerWrapper = document.createElement('div');
+                    playerWrapper.className = 'flex items-center gap-2';
+                    playerWrapper.dataset.lang = lang;
+                    
+                    const audioEl = new Audio(audioUrl);
+                    audioEl.controls = true;
+                    audioEl.className = 'w-full';
+
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.type = 'button';
+                    downloadBtn.className = "download-audio-btn p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600";
+                    downloadBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                  <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                                </svg>`;
+                    downloadBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        downloadMedia(mediaKey, `${currentLesson.theme}-p${page.page_number}-${lang}.wav`);
+                    });
+
+                    playerWrapper.appendChild(audioEl);
+                    playerWrapper.appendChild(downloadBtn);
+                    container.appendChild(playerWrapper);
+                }
+
+            } catch (err) {
+                console.error("Audio Generation Error:", err);
+                if (container) {
+                    const errorPara = document.createElement('p');
+                    errorPara.className = 'text-red-500 text-sm';
+                    errorPara.textContent = `${lang}: ${err.message}`;
+                    container.appendChild(errorPara);
+                }
+            } finally {
+                 button.disabled = false;
+                 button.innerHTML = originalText;
+            }
+        }
+        
+        function downloadMedia(mediaKey, filename) {
+            const mediaUrl = generatedMedia[mediaKey];
+            if (!mediaUrl) {
+                console.error("Media not found for key:", mediaKey);
+                return;
+            }
+            const a = document.createElement('a');
+            a.href = mediaUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // --- API Call Helpers ---
+        async function callGenerativeAPI(systemPrompt, userPrompt, responseMimeType = "text/plain") {
+             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+             const payload = { systemInstruction: { parts: [{ text: systemPrompt }] }, contents: [{ parts: [{ text: userPrompt }] }], generationConfig: { responseMimeType } };
+             const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+             if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error?.message || "API request failed"); }
+             const result = await response.json();
+             return result.candidates?.[0]?.content?.parts?.[0]?.text;
+        }
+
+        async function callImageAPI(prompt) {
+             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+             const payload = { instances: [{ prompt: prompt }], parameters: { "sampleCount": 1 } };
+             const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+             if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.error?.message || `API Error: ${response.statusText}`);
+             }
+             const result = await response.json();
+             const base64Data = result?.predictions?.[0]?.bytesBase64Encoded;
+             if (!base64Data) {
+                console.error("Image API Response issue:", result);
+                throw new Error("No image data returned from API.");
+             }
+             return base64Data;
+        }
+
+        // --- UI Helpers ---
+        function setLoading(isLoading) {
+            loadingIndicator.classList.toggle('hidden', !isLoading);
+            generateLessonBtn.disabled = isLoading;
+            generateLessonBtn.classList.toggle('opacity-50', isLoading);
+        }
+
+        function showError(message) { errorText.textContent = message; errorMessage.classList.remove('hidden'); }
+        function hideError() { errorMessage.classList.add('hidden'); }
+        
+        // --- Audio Conversion Helpers ---
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); }
+            return bytes.buffer;
+        }
+
+        function pcmToWav(pcmData, sampleRate) {
+            const header = new ArrayBuffer(44);
+            const view = new DataView(header);
+            const numChannels = 1, bitsPerSample = 16, blockAlign = (numChannels * bitsPerSample) / 8;
+            const byteRate = sampleRate * blockAlign, dataSize = pcmData.length * 2;
+            view.setUint32(0, 0x52494646, false); // "RIFF"
+            view.setUint32(4, 36 + dataSize, true);
+            view.setUint32(8, 0x57415645, false); // "WAVE"
+            view.setUint32(12, 0x666d7420, false); // "fmt "
+            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true); view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true); view.setUint16(34, bitsPerSample, true);
+            view.setUint32(36, 0x64617461, false); // "data"
+            view.setUint32(40, dataSize, true);
+            const wavBytes = new Uint8Array(44 + dataSize);
+            wavBytes.set(new Uint8Array(header), 0);
+            wavBytes.set(new Uint8Array(pcmData.buffer), 44);
+            return new Blob([wavBytes], { type: 'audio/wav' });
+        }
+        
+        // --- Initial Load ---
+        function createBubbles() {
+            const container = document.getElementById('underwater-world');
+            if (!container) return;
+            const bubbleCount = 20;
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 40 + 10; // 10px to 50px
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 10 + 8}s`; // 8s to 18s
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(bubble);
+            }
+        }
+        
+        setLanguage(currentLang);
+        createBubbles();
+
+    </script>
+</body>
+</html>
+
