@@ -1,55 +1,95 @@
-const fetch = require('node-fetch');
+import fetch from "node-fetch";
 
-exports.handler = async function(event) {
-    const API_KEY = process.env.GOOGLE_API_KEY; // 讀取環境變數
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
-    // --- 最終除錯步驟 ---
-    // 如果在伺服器上找不到名為 GOOGLE_API_KEY 的環境變數，就立刻回傳錯誤
-    if (!API_KEY) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "SERVER ERROR: The GOOGLE_API_KEY environment variable was not found on Netlify's server. Please double check the variable name and that it is set for the correct project." })
-        };
+export const handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 204, headers: cors };
+  }
+
+  if (event.httpMethod !== "POST") {
+    return {
+      statusCode: 405,
+      headers: cors,
+      body: JSON.stringify({ error: "Use POST method" }),
+    };
+  }
+
+  try {
+    const { prompt = "Create a 15-minute beginner sales English lesson with warm-up, key phrases, and role-play." } =
+      JSON.parse(event.body || "{}");
+
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) {
+      return {
+        statusCode: 500,
+        headers: cors,
+        body: JSON.stringify({ error: "Missing OPENAI_API_KEY" }),
+      };
     }
-    // --- 除錯結束 ---
 
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        input: [
+          {
+            role: "system",
+            content:
+              "You are an expert English tutor. Always output valid JSON with keys: warm_up, key_phrases, and role_play. No explanation outside JSON.",
+          },
+          {
+            role: "user",
+            content: `${prompt} Please respond strictly in JSON format like this:\n{\n  "warm_up": "...",\n  "key_phrases": "...",\n  "role_play": "..." \n}`,
+          },
+        ],
+        temperature: 0.7,
+        max_output_tokens: 1000,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        statusCode: response.status,
+        headers: cors,
+        body: JSON.stringify(data),
+      };
+    }
+
+    // ✅ 改成兼容新版 Responses API 的解析邏輯
+    let text =
+      data.output_text ||
+      data.output?.[0]?.content?.[0]?.text ||
+      data.choices?.[0]?.message?.content ||
+      "";
+
+    let lesson = {};
     try {
-        const { systemPrompt, userPrompt, responseMimeType } = JSON.parse(event.body);
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
-
-        const payload = {
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ parts: [{ text: userPrompt }] }],
-            generationConfig: { responseMimeType }
-        };
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            // 如果金鑰本身是錯的 (例如過期或權限不足)，會在這裡顯示 Google 的錯誤
-            return { statusCode: response.status, body: JSON.stringify({ error: `Google API Error: ${errorData.error?.message}` }) };
-        }
-
-        const result = await response.json();
-        const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!rawText) {
-            throw new Error("AI did not return any text.");
-        }
-
-        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        const cleanedText = jsonMatch ? jsonMatch[0] : '{}';
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ text: cleanedText })
-        };
-    } catch (error) {
-        return { statusCode: 500, body: JSON.stringify({ error: `Catch Block Error: ${error.message}` }) };
+      lesson = JSON.parse(text);
+    } catch {
+      lesson = { warm_up: text || "(No content)", key_phrases: "", role_play: "" };
     }
+
+    return {
+      statusCode: 200,
+      headers: cors,
+      body: JSON.stringify({ lesson }),
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      headers: cors,
+      body: JSON.stringify({ error: String(err) }),
+    };
+  }
 };
