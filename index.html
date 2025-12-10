@@ -303,6 +303,9 @@
             <button data-view="ai-tutor-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.aiTutor">AI 助教</button>
             <button data-view="ai-doctor-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.aiDoctor">AI 小醫生</button>
             <button data-view="debate-coach-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.debateCoach">AI 辯論教練</button>
+            <button data-view="admin-view" id="admin-nav-btn" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center hidden" style="background-color: rgba(239, 68, 68, 0.3); border: 1px solid rgba(239, 68, 68, 0.5);">
+                <i class="fas fa-shield-alt mr-2"></i>管理員
+            </button>
         </nav>
         
         <!-- View Container -->
@@ -715,6 +718,61 @@
                     </div>
                 </div>
             </div>
+
+            <!-- (7) Admin Management View -->
+            <div id="admin-view" class="view-content hidden">
+                <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 border-2 border-white/20 text-white">
+                    <h2 class="text-3xl font-bold text-center mb-2">
+                        <i class="fas fa-shield-alt mr-2"></i>管理員控制台
+                    </h2>
+                    <p class="text-center text-indigo-200 mb-8">管理用戶授權與審核新註冊者</p>
+                    
+                    <div id="admin-error-message" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert"></div>
+                    <div id="admin-success-message" class="hidden mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md" role="alert"></div>
+
+                    <!-- Tabs -->
+                    <div class="flex space-x-2 mb-6 border-b border-white/20">
+                        <button id="admin-tab-pending" class="px-4 py-2 font-medium border-b-2 border-yellow-400 text-yellow-400">
+                            待審核用戶
+                        </button>
+                        <button id="admin-tab-authorized" class="px-4 py-2 font-medium border-b-2 border-transparent hover:text-yellow-400">
+                            已授權用戶
+                        </button>
+                    </div>
+
+                    <!-- Pending Users Tab -->
+                    <div id="admin-pending-tab" class="space-y-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">待審核的註冊用戶</h3>
+                            <button id="refresh-pending-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm">
+                                <i class="fas fa-sync-alt mr-2"></i>刷新
+                            </button>
+                        </div>
+                        <div id="pending-users-container" class="space-y-3">
+                            <div class="text-center text-indigo-200 py-8">
+                                <div class="loader mx-auto mb-2"></div>
+                                <p>載入中...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authorized Users Tab -->
+                    <div id="admin-authorized-tab" class="space-y-4 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">已授權用戶列表</h3>
+                            <button id="refresh-authorized-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm">
+                                <i class="fas fa-sync-alt mr-2"></i>刷新
+                            </button>
+                        </div>
+                        <div id="authorized-users-container" class="space-y-3">
+                            <div class="text-center text-indigo-200 py-8">
+                                <div class="loader mx-auto mb-2"></div>
+                                <p>載入中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -824,6 +882,19 @@
         document.getElementById('main-app').classList.remove('hidden');
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) logoutBtn.classList.remove('hidden');
+        
+        // Check if user is admin and show admin button
+        checkAndShowAdminButton();
+    }
+    
+    // Check if current user is admin (rofi90@hotmail.com)
+    function checkAndShowAdminButton() {
+        const adminNavBtn = document.getElementById('admin-nav-btn');
+        if (adminNavBtn && currentUser && currentUser.email === 'rofi90@hotmail.com') {
+            adminNavBtn.classList.remove('hidden');
+        } else if (adminNavBtn) {
+            adminNavBtn.classList.add('hidden');
+        }
     }
 
     // --- Setup Authentication UI ---
@@ -934,6 +1005,7 @@
                     currentUser = session.user;
                     showMainApp();
                     logoutBtn?.classList.remove('hidden');
+                    checkAndShowAdminButton();
                 } else if (event === 'SIGNED_OUT') {
                     isAuthenticated = false;
                     currentUser = null;
@@ -4384,6 +4456,9 @@
             } else {
                 renderDebateModules();
             }
+            if (viewId === 'admin-view') {
+                loadAdminData();
+            }
         }
         
         function handleNavClick(e) {
@@ -4392,6 +4467,179 @@
                 switchView(btn.dataset.view);
             }
         }
+
+        // --- Admin Management Functions ---
+        const ADMIN_EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/admin-management`;
+        
+        async function callAdminFunction(action, payload = {}) {
+            if (!supabase || !isAuthenticated) {
+                throw new Error('請先登入');
+            }
+            
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                throw new Error('未找到登入會話');
+            }
+            
+            const response = await fetch(ADMIN_EDGE_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ action, ...payload }),
+            });
+            
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || '操作失敗');
+            }
+            
+            return result;
+        }
+        
+        async function loadAdminData() {
+            const pendingContainer = document.getElementById('pending-users-container');
+            const authorizedContainer = document.getElementById('authorized-users-container');
+            const adminErrorMsg = document.getElementById('admin-error-message');
+            const adminSuccessMsg = document.getElementById('admin-success-message');
+            
+            adminErrorMsg?.classList.add('hidden');
+            adminSuccessMsg?.classList.add('hidden');
+            
+            // Load pending users
+            try {
+                pendingContainer.innerHTML = '<div class="text-center text-indigo-200 py-8"><div class="loader mx-auto mb-2"></div><p>載入中...</p></div>';
+                const pendingResult = await callAdminFunction('get_pending_users');
+                renderPendingUsers(pendingResult.users || []);
+            } catch (error) {
+                pendingContainer.innerHTML = `<div class="text-center text-red-300 py-8"><p>載入失敗: ${error.message}</p></div>`;
+            }
+            
+            // Load authorized users
+            try {
+                authorizedContainer.innerHTML = '<div class="text-center text-indigo-200 py-8"><div class="loader mx-auto mb-2"></div><p>載入中...</p></div>';
+                const authorizedResult = await callAdminFunction('get_authorized_users');
+                renderAuthorizedUsers(authorizedResult.users || []);
+            } catch (error) {
+                authorizedContainer.innerHTML = `<div class="text-center text-red-300 py-8"><p>載入失敗: ${error.message}</p></div>`;
+            }
+        }
+        
+        function renderPendingUsers(users) {
+            const container = document.getElementById('pending-users-container');
+            if (!container) return;
+            
+            if (users.length === 0) {
+                container.innerHTML = '<div class="text-center text-indigo-200 py-8"><p>目前沒有待審核的用戶</p></div>';
+                return;
+            }
+            
+            container.innerHTML = users.map(user => {
+                const createdDate = new Date(user.created_at).toLocaleString('zh-TW');
+                const lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString('zh-TW') : '從未登入';
+                return `
+                    <div class="bg-white/10 rounded-lg p-4 border border-white/20">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <p class="font-semibold text-lg">${user.email}</p>
+                                <p class="text-sm text-indigo-200 mt-1">註冊時間: ${createdDate}</p>
+                                <p class="text-sm text-indigo-200">最後登入: ${lastSignIn}</p>
+                            </div>
+                            <button onclick="approveUser('${user.id}', '${user.email}')" 
+                                    class="ml-4 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium">
+                                <i class="fas fa-check mr-2"></i>審核通過
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderAuthorizedUsers(users) {
+            const container = document.getElementById('authorized-users-container');
+            if (!container) return;
+            
+            if (users.length === 0) {
+                container.innerHTML = '<div class="text-center text-indigo-200 py-8"><p>目前沒有已授權的用戶</p></div>';
+                return;
+            }
+            
+            container.innerHTML = users.map(user => {
+                const createdDate = new Date(user.created_at).toLocaleString('zh-TW');
+                const updatedDate = new Date(user.updated_at).toLocaleString('zh-TW');
+                const statusBadge = user.is_active 
+                    ? '<span class="px-2 py-1 bg-green-600 rounded text-xs">啟用</span>'
+                    : '<span class="px-2 py-1 bg-red-600 rounded text-xs">停用</span>';
+                return `
+                    <div class="bg-white/10 rounded-lg p-4 border border-white/20">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <p class="font-semibold text-lg">${user.email}</p>
+                                    ${statusBadge}
+                                </div>
+                                <p class="text-sm text-indigo-200">建立時間: ${createdDate}</p>
+                                <p class="text-sm text-indigo-200">更新時間: ${updatedDate}</p>
+                                ${user.notes ? `<p class="text-sm text-indigo-200 mt-1">備註: ${user.notes}</p>` : ''}
+                            </div>
+                            <div class="ml-4 flex gap-2">
+                                ${user.is_active 
+                                    ? `<button onclick="updateUserStatus('${user.user_id}', false)" 
+                                              class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium">
+                                          <i class="fas fa-ban mr-2"></i>停用
+                                      </button>`
+                                    : `<button onclick="updateUserStatus('${user.user_id}', true)" 
+                                              class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium">
+                                          <i class="fas fa-check mr-2"></i>啟用
+                                      </button>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        async function approveUser(userId, email) {
+            const adminErrorMsg = document.getElementById('admin-error-message');
+            const adminSuccessMsg = document.getElementById('admin-success-message');
+            
+            adminErrorMsg?.classList.add('hidden');
+            adminSuccessMsg?.classList.add('hidden');
+            
+            try {
+                await callAdminFunction('approve_user', { user_id: userId, email });
+                adminSuccessMsg.textContent = `已成功審核通過 ${email}`;
+                adminSuccessMsg.classList.remove('hidden');
+                loadAdminData();
+            } catch (error) {
+                adminErrorMsg.textContent = `審核失敗: ${error.message}`;
+                adminErrorMsg.classList.remove('hidden');
+            }
+        }
+        
+        async function updateUserStatus(userId, isActive) {
+            const adminErrorMsg = document.getElementById('admin-error-message');
+            const adminSuccessMsg = document.getElementById('admin-success-message');
+            
+            adminErrorMsg?.classList.add('hidden');
+            adminSuccessMsg?.classList.add('hidden');
+            
+            try {
+                await callAdminFunction('update_user_status', { user_id: userId, is_active: isActive });
+                adminSuccessMsg.textContent = `已成功${isActive ? '啟用' : '停用'}用戶`;
+                adminSuccessMsg.classList.remove('hidden');
+                loadAdminData();
+            } catch (error) {
+                adminErrorMsg.textContent = `更新失敗: ${error.message}`;
+                adminErrorMsg.classList.remove('hidden');
+            }
+        }
+        
+        // Make functions globally accessible for onclick handlers
+        window.approveUser = approveUser;
+        window.updateUserStatus = updateUserStatus;
 
         async function generateLesson() {
             setLoading(generateLessonBtn, true);
@@ -6247,6 +6495,54 @@ document.addEventListener('click', (event) => {
         function init() {
             mainNav.addEventListener('click', handleNavClick);
             languageSwitcher.addEventListener('change', (e) => setLanguage(e.target.value));
+            
+            // Admin tab switching
+            const adminTabPending = document.getElementById('admin-tab-pending');
+            const adminTabAuthorized = document.getElementById('admin-tab-authorized');
+            const adminPendingTab = document.getElementById('admin-pending-tab');
+            const adminAuthorizedTab = document.getElementById('admin-authorized-tab');
+            const refreshPendingBtn = document.getElementById('refresh-pending-btn');
+            const refreshAuthorizedBtn = document.getElementById('refresh-authorized-btn');
+            
+            adminTabPending?.addEventListener('click', () => {
+                adminTabPending.classList.add('border-yellow-400', 'text-yellow-400');
+                adminTabPending.classList.remove('border-transparent');
+                adminTabAuthorized?.classList.remove('border-yellow-400', 'text-yellow-400');
+                adminTabAuthorized?.classList.add('border-transparent');
+                adminPendingTab?.classList.remove('hidden');
+                adminAuthorizedTab?.classList.add('hidden');
+            });
+            
+            adminTabAuthorized?.addEventListener('click', () => {
+                adminTabAuthorized.classList.add('border-yellow-400', 'text-yellow-400');
+                adminTabAuthorized.classList.remove('border-transparent');
+                adminTabPending?.classList.remove('border-yellow-400', 'text-yellow-400');
+                adminTabPending?.classList.add('border-transparent');
+                adminAuthorizedTab?.classList.remove('hidden');
+                adminPendingTab?.classList.add('hidden');
+            });
+            
+            refreshPendingBtn?.addEventListener('click', async () => {
+                const container = document.getElementById('pending-users-container');
+                try {
+                    container.innerHTML = '<div class="text-center text-indigo-200 py-8"><div class="loader mx-auto mb-2"></div><p>載入中...</p></div>';
+                    const result = await callAdminFunction('get_pending_users');
+                    renderPendingUsers(result.users || []);
+                } catch (error) {
+                    container.innerHTML = `<div class="text-center text-red-300 py-8"><p>載入失敗: ${error.message}</p></div>`;
+                }
+            });
+            
+            refreshAuthorizedBtn?.addEventListener('click', async () => {
+                const container = document.getElementById('authorized-users-container');
+                try {
+                    container.innerHTML = '<div class="text-center text-indigo-200 py-8"><div class="loader mx-auto mb-2"></div><p>載入中...</p></div>';
+                    const result = await callAdminFunction('get_authorized_users');
+                    renderAuthorizedUsers(result.users || []);
+                } catch (error) {
+                    container.innerHTML = `<div class="text-center text-red-300 py-8"><p>載入失敗: ${error.message}</p></div>`;
+                }
+            });
             
             generateLessonBtn.addEventListener('click', generateLesson);
             subjectGroup.addEventListener('change', (e) => {
