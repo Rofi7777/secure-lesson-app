@@ -1049,8 +1049,80 @@
     
     // Initialize Supabase client
     let supabase = null;
-    if (typeof window !== 'undefined' && window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Wait for Supabase library to load, then initialize
+    function initializeSupabase() {
+        try {
+            // Check if Supabase library is loaded (from CDN @supabase/supabase-js@2)
+            if (typeof window !== 'undefined' && window.supabase) {
+                if (typeof window.supabase.createClient === 'function') {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                        auth: {
+                            persistSession: true,
+                            autoRefreshToken: true,
+                            detectSessionInUrl: true
+                        }
+                    });
+                    console.log('✓ Supabase client initialized successfully');
+                    console.log('Supabase URL:', SUPABASE_URL);
+                    return true;
+                } else {
+                    console.error('✗ window.supabase.createClient is not a function');
+                    console.log('window.supabase type:', typeof window.supabase);
+                    console.log('window.supabase keys:', Object.keys(window.supabase || {}));
+                    return false;
+                }
+            } else {
+                console.warn('⚠ window.supabase not found, Supabase library may not be loaded yet');
+                return false;
+            }
+        } catch (error) {
+            console.error('✗ Error initializing Supabase:', error);
+            return false;
+        }
+    }
+    
+    // Try to initialize immediately (script may have loaded already)
+    if (!initializeSupabase()) {
+        // Wait for script to load, then try again
+        let retryCount = 0;
+        const maxRetries = 10;
+        
+        const retryInit = setInterval(() => {
+            retryCount++;
+            if (initializeSupabase()) {
+                clearInterval(retryInit);
+            } else if (retryCount >= maxRetries) {
+                clearInterval(retryInit);
+                console.error('✗ Failed to initialize Supabase after', maxRetries, 'attempts');
+                console.error('Please check if the Supabase script is loaded: https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+            }
+        }, 200);
+    }
+    
+    // Test Supabase connection
+    async function testSupabaseConnection() {
+        if (!supabase) {
+            return { success: false, error: 'Supabase client not initialized' };
+        }
+        
+        try {
+            const startTime = Date.now();
+            const { data, error } = await withTimeout(
+                supabase.auth.getSession(),
+                5000,
+                '連接測試超時'
+            );
+            const duration = Date.now() - startTime;
+            
+            if (error && error.message !== 'Invalid Refresh Token: Refresh Token Not Found') {
+                return { success: false, error: error.message, duration };
+            }
+            
+            return { success: true, duration, hasSession: !!data?.session };
+        } catch (error) {
+            return { success: false, error: error.message || '連接測試失敗' };
+        }
     }
     
     // --- Authentication State ---
@@ -1099,18 +1171,49 @@
     }
 
     async function handleLogin(email, password) {
+        // Ensure Supabase is initialized
         if (!supabase) {
-            throw new Error('Supabase not configured');
+            console.error('Supabase not initialized, attempting to initialize...');
+            if (!initializeSupabase()) {
+                throw new Error('無法連接到 Supabase 服務器。請檢查網絡連接或聯繫管理員。');
+            }
         }
+        
+        // Test connection first
+        console.log('Testing Supabase connection...');
+        const connectionTest = await testSupabaseConnection();
+        if (!connectionTest.success) {
+            console.error('Connection test failed:', connectionTest);
+            throw new Error(`無法連接到服務器：${connectionTest.error}。請檢查網絡連接。`);
+        }
+        console.log('Connection test passed:', connectionTest);
+        
+        console.log('Attempting login for:', email);
+        const startTime = Date.now();
         
         const loginPromise = supabase.auth.signInWithPassword({
             email,
             password
         });
         
-        const { data, error } = await withTimeout(loginPromise, 15000, '登入請求超時，請檢查網絡連接');
+        const { data, error } = await withTimeout(loginPromise, 20000, '登入請求超時，請檢查網絡連接');
+        const duration = Date.now() - startTime;
         
-        if (error) throw error;
+        console.log(`Login attempt completed in ${duration}ms`, { hasData: !!data, error });
+        
+        if (error) {
+            console.error('Login error details:', {
+                message: error.message,
+                status: error.status,
+                name: error.name
+            });
+            throw error;
+        }
+        
+        if (!data || !data.user) {
+            throw new Error('登入失敗：未收到有效的用戶數據');
+        }
+        
         return data;
     }
 
