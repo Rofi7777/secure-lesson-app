@@ -238,9 +238,9 @@
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 bg-gradient-to-r from-white via-yellow-200 to-pink-200 bg-clip-text text-transparent">
                     LingoVerse AI
                 </h2>
-                <p class="text-indigo-200 text-base md:text-lg font-medium">您的 AI 學習宇宙 🌟</p>
+                <p class="text-indigo-200 text-base md:text-lg font-medium" data-translate-key="main_subtitle">您的 AI 學習宇宙 🌟</p>
                 <p class="text-white/90 text-xs md:text-sm mt-2 flex items-center justify-center gap-2">
-                    <span>歡迎回來！</span>
+                    <span data-translate-key="login.welcomeBack">歡迎回來！</span>
                     <span class="animate-pulse">✨</span>
                 </p>
             </div>
@@ -250,32 +250,32 @@
             <form id="login-form" class="space-y-5">
                 <div>
                     <label for="login-email" class="block text-sm font-medium text-white/90 mb-2">
-                        <i class="fas fa-envelope mr-2 text-indigo-300"></i>電子郵件
+                        <i class="fas fa-envelope mr-2 text-indigo-300"></i><span data-translate-key="login.email">電子郵件</span>
                     </label>
                     <input type="email" id="login-email" required 
                            class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 focus:outline-none text-white placeholder-white/50 transition-all"
-                           placeholder="your@email.com">
+                           data-translate-key="login.emailPlaceholder" placeholder="your@email.com">
                 </div>
                 <div>
                     <label for="login-password" class="block text-sm font-medium text-white/90 mb-2">
-                        <i class="fas fa-lock mr-2 text-indigo-300"></i>密碼
+                        <i class="fas fa-lock mr-2 text-indigo-300"></i><span data-translate-key="login.password">密碼</span>
                     </label>
                     <input type="password" id="login-password" required
                            class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 focus:outline-none text-white placeholder-white/50 transition-all"
-                           placeholder="••••••••">
+                           data-translate-key="login.passwordPlaceholder" placeholder="••••••••">
                 </div>
                 <button type="submit" 
                         class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-lg hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 focus:outline-none focus:ring-4 focus:ring-yellow-400/50 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                    <span>登入</span>
+                    <span data-translate-key="login.loginBtn">登入</span>
                     <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
             
             <div class="mt-6 text-center">
                 <p class="text-sm text-white/70">
-                    還沒有帳號？ 
+                    <span data-translate-key="login.noAccount">還沒有帳號？</span> 
                     <a href="#" id="show-signup" class="text-yellow-300 hover:text-yellow-200 font-semibold transition-colors inline-flex items-center gap-1">
-                        立即註冊
+                        <span data-translate-key="login.registerNow">立即註冊</span>
                         <i class="fas fa-chevron-right text-xs"></i>
                     </a>
                 </p>
@@ -286,15 +286,15 @@
                 <div class="grid grid-cols-3 gap-4 text-center">
                     <div class="flex flex-col items-center transform hover:scale-110 transition-transform cursor-default">
                         <div class="text-4xl mb-2 animate-bounce" style="animation-duration: 2s;">🌍</div>
-                        <p class="text-sm text-white font-medium">多語言</p>
+                        <p class="text-sm text-white font-medium" data-translate-key="login.featureMultilingual">多語言</p>
                     </div>
                     <div class="flex flex-col items-center transform hover:scale-110 transition-transform cursor-default">
                         <div class="text-4xl mb-2 animate-bounce" style="animation-duration: 2.5s; animation-delay: 0.3s;">🤖</div>
-                        <p class="text-sm text-white font-medium">AI 驅動</p>
+                        <p class="text-sm text-white font-medium" data-translate-key="login.featureAI">AI 驅動</p>
                     </div>
                     <div class="flex flex-col items-center transform hover:scale-110 transition-transform cursor-default">
                         <div class="text-4xl mb-2 animate-bounce" style="animation-duration: 2.2s; animation-delay: 0.6s;">⭐</div>
-                        <p class="text-sm text-white font-medium">個人化</p>
+                        <p class="text-sm text-white font-medium" data-translate-key="login.featurePersonalized">個人化</p>
                     </div>
                 </div>
             </div>
@@ -340,11 +340,11 @@
                     <i class="fas fa-user-plus text-4xl md:text-5xl text-white"></i>
                 </div>
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 bg-gradient-to-r from-white via-cyan-200 to-emerald-200 bg-clip-text text-transparent">
-                    加入我們 🎉
+                    <span data-translate-key="signup.joinUs">加入我們</span> 🎉
                 </h2>
-                <p class="text-indigo-200 text-base md:text-lg font-medium">開始您的 AI 學習之旅 ✨</p>
+                <p class="text-indigo-200 text-base md:text-lg font-medium" data-translate-key="signup.startJourney">開始您的 AI 學習之旅 ✨</p>
                 <p class="text-white/90 text-xs md:text-sm mt-2 flex items-center justify-center gap-2">
-                    <span>註冊帳號，立即體驗多樣化的 AI 學習功能</span>
+                    <span data-translate-key="signup.signupDesc">註冊帳號，立即體驗多樣化的 AI 學習功能</span>
                 </p>
             </div>
             
@@ -354,35 +354,35 @@
             <form id="signup-form" class="space-y-5">
                 <div>
                     <label for="signup-email" class="block text-sm font-medium text-white/90 mb-2">
-                        <i class="fas fa-envelope mr-2 text-indigo-300"></i>電子郵件
+                        <i class="fas fa-envelope mr-2 text-indigo-300"></i><span data-translate-key="signup.email">電子郵件</span>
                     </label>
                     <input type="email" id="signup-email" required
                            class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 focus:outline-none text-white placeholder-white/50 transition-all"
-                           placeholder="your@email.com">
+                           data-translate-key="signup.emailPlaceholder" placeholder="your@email.com">
                 </div>
                 <div>
                     <label for="signup-password" class="block text-sm font-medium text-white/90 mb-2">
-                        <i class="fas fa-lock mr-2 text-indigo-300"></i>密碼
+                        <i class="fas fa-lock mr-2 text-indigo-300"></i><span data-translate-key="signup.password">密碼</span>
                     </label>
                     <input type="password" id="signup-password" required minlength="6"
                            class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 focus:outline-none text-white placeholder-white/50 transition-all"
-                           placeholder="至少6個字元">
+                           data-translate-key="signup.passwordPlaceholder" placeholder="至少6個字元">
                     <p class="text-xs text-white/60 mt-1">
-                        <i class="fas fa-info-circle mr-1"></i>密碼長度至少需要 6 個字元
+                        <i class="fas fa-info-circle mr-1"></i><span data-translate-key="signup.passwordHint">密碼長度至少需要 6 個字元</span>
                     </p>
                 </div>
                 <button type="submit"
                         class="w-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500 text-white font-bold py-4 px-6 rounded-lg hover:from-emerald-600 hover:via-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-4 focus:ring-yellow-400/50 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                    <span>建立帳號</span>
+                    <span data-translate-key="signup.signupBtn">建立帳號</span>
                     <i class="fas fa-rocket"></i>
                 </button>
             </form>
             
             <div class="mt-6 text-center">
                 <p class="text-sm text-white/70">
-                    已有帳號？ 
+                    <span data-translate-key="signup.haveAccount">已有帳號？</span> 
                     <a href="#" id="show-login" class="text-yellow-300 hover:text-yellow-200 font-semibold transition-colors inline-flex items-center gap-1">
-                        返回登入
+                        <span data-translate-key="signup.backToLogin">返回登入</span>
                         <i class="fas fa-chevron-left text-xs"></i>
                     </a>
                 </p>
@@ -391,25 +391,25 @@
             <!-- Benefits Section - More playful for kids -->
             <div class="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-white/20">
                 <p class="text-xs md:text-sm font-semibold text-white/90 mb-3 md:mb-4 text-center flex items-center justify-center gap-2">
-                    <span>註冊即可享受：</span>
+                    <span data-translate-key="signup.benefitsTitle">註冊即可享受：</span>
                     <span class="text-lg md:text-xl animate-bounce">🎁</span>
                 </p>
                 <div class="grid grid-cols-2 gap-2 md:gap-3">
                     <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-3 border border-white/20 transform hover:scale-105 transition-transform">
                         <span class="text-xl md:text-2xl">🌍</span>
-                        <span class="text-xs md:text-sm text-white font-medium">多語言學習</span>
+                        <span class="text-xs md:text-sm text-white font-medium" data-translate-key="signup.benefitMultilingual">多語言學習</span>
                     </div>
                     <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-3 border border-white/20 transform hover:scale-105 transition-transform">
                         <span class="text-xl md:text-2xl">🤖</span>
-                        <span class="text-xs md:text-sm text-white font-medium">AI 助教</span>
+                        <span class="text-xs md:text-sm text-white font-medium" data-translate-key="signup.benefitAITutor">AI 助教</span>
                     </div>
                     <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-3 border border-white/20 transform hover:scale-105 transition-transform">
                         <span class="text-xl md:text-2xl">📚</span>
-                        <span class="text-xs md:text-sm text-white font-medium">作業輔導</span>
+                        <span class="text-xs md:text-sm text-white font-medium" data-translate-key="signup.benefitTutoring">作業輔導</span>
                     </div>
                     <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-3 border border-white/20 transform hover:scale-105 transition-transform">
                         <span class="text-xl md:text-2xl">📖</span>
-                        <span class="text-xs md:text-sm text-white font-medium">繪本朗讀</span>
+                        <span class="text-xs md:text-sm text-white font-medium" data-translate-key="signup.benefitStorybook">繪本朗讀</span>
                     </div>
                 </div>
             </div>
@@ -1139,38 +1139,94 @@
         const signupLanguageSwitcher = document.getElementById('signup-language-switcher');
         
         loginLanguageSwitcher?.addEventListener('change', (e) => {
-            if (typeof setLanguage === 'function') {
-                setLanguage(e.target.value);
-            } else {
-                // Fallback: store language preference
-                const lang = e.target.value;
-                if (typeof currentLang !== 'undefined') {
-                    currentLang = lang;
+            const lang = e.target.value;
+            // Update currentLang immediately
+            if (typeof currentLang !== 'undefined') {
+                currentLang = lang;
+            }
+            // Try to call setLanguage, with fallback
+            setTimeout(() => {
+                if (typeof setLanguage === 'function') {
+                    setLanguage(lang);
+                } else {
+                    // Manual translation update for login page
+                    updateLoginPageTranslations(lang);
                 }
-                // Update select value in main app if it exists
-                const mainLangSwitcher = document.getElementById('language-switcher');
-                if (mainLangSwitcher) {
-                    mainLangSwitcher.value = lang;
-                }
+            }, 0);
+            // Sync with main language switcher
+            const mainLangSwitcher = document.getElementById('language-switcher');
+            if (mainLangSwitcher) {
+                mainLangSwitcher.value = lang;
             }
         });
         
         signupLanguageSwitcher?.addEventListener('change', (e) => {
-            if (typeof setLanguage === 'function') {
-                setLanguage(e.target.value);
-            } else {
-                // Fallback: store language preference
-                const lang = e.target.value;
-                if (typeof currentLang !== 'undefined') {
-                    currentLang = lang;
+            const lang = e.target.value;
+            // Update currentLang immediately
+            if (typeof currentLang !== 'undefined') {
+                currentLang = lang;
+            }
+            // Try to call setLanguage, with fallback
+            setTimeout(() => {
+                if (typeof setLanguage === 'function') {
+                    setLanguage(lang);
+                } else {
+                    // Manual translation update for signup page
+                    updateSignupPageTranslations(lang);
                 }
-                // Update select value in main app if it exists
-                const mainLangSwitcher = document.getElementById('language-switcher');
-                if (mainLangSwitcher) {
-                    mainLangSwitcher.value = lang;
-                }
+            }, 0);
+            // Sync with main language switcher
+            const mainLangSwitcher = document.getElementById('language-switcher');
+            if (mainLangSwitcher) {
+                mainLangSwitcher.value = lang;
             }
         });
+        
+        // Helper function to update login page translations
+        function updateLoginPageTranslations(lang) {
+            // Wait for translations to be available
+            if (typeof translations === 'undefined' || !translations[lang] || !translations[lang].login) {
+                // Retry after a short delay if translations not ready
+                setTimeout(() => updateLoginPageTranslations(lang), 100);
+                return;
+            }
+            const t = translations[lang].login;
+            document.querySelectorAll('[data-translate-key^="login."]').forEach(el => {
+                const key = el.dataset.translateKey.replace('login.', '');
+                if (t[key]) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = t[key];
+                    } else if (el.tagName === 'SPAN' || el.tagName === 'P' || el.tagName === 'LABEL' || el.tagName === 'H1' || el.tagName === 'H2') {
+                        el.textContent = t[key];
+                    } else {
+                        el.textContent = t[key];
+                    }
+                }
+            });
+        }
+        
+        // Helper function to update signup page translations
+        function updateSignupPageTranslations(lang) {
+            // Wait for translations to be available
+            if (typeof translations === 'undefined' || !translations[lang] || !translations[lang].signup) {
+                // Retry after a short delay if translations not ready
+                setTimeout(() => updateSignupPageTranslations(lang), 100);
+                return;
+            }
+            const t = translations[lang].signup;
+            document.querySelectorAll('[data-translate-key^="signup."]').forEach(el => {
+                const key = el.dataset.translateKey.replace('signup.', '');
+                if (t[key]) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = t[key];
+                    } else if (el.tagName === 'SPAN' || el.tagName === 'P' || el.tagName === 'LABEL' || el.tagName === 'H1' || el.tagName === 'H2') {
+                        el.textContent = t[key];
+                    } else {
+                        el.textContent = t[key];
+                    }
+                }
+            });
+        }
 
         // Logout button
         const logoutBtn = document.getElementById('logout-btn');
@@ -1630,6 +1686,37 @@
                             ]
                         }
                     }
+                },
+                login: {
+                    welcomeBack: '歡迎回來！',
+                    email: '電子郵件',
+                    emailPlaceholder: 'your@email.com',
+                    password: '密碼',
+                    passwordPlaceholder: '••••••••',
+                    loginBtn: '登入',
+                    noAccount: '還沒有帳號？',
+                    registerNow: '立即註冊',
+                    featureMultilingual: '多語言',
+                    featureAI: 'AI 驅動',
+                    featurePersonalized: '個人化'
+                },
+                signup: {
+                    joinUs: '加入我們',
+                    startJourney: '開始您的 AI 學習之旅',
+                    signupDesc: '註冊帳號，立即體驗多樣化的 AI 學習功能',
+                    email: '電子郵件',
+                    emailPlaceholder: 'your@email.com',
+                    password: '密碼',
+                    passwordPlaceholder: '至少6個字元',
+                    passwordHint: '密碼長度至少需要 6 個字元',
+                    signupBtn: '建立帳號',
+                    haveAccount: '已有帳號？',
+                    backToLogin: '返回登入',
+                    benefitsTitle: '註冊即可享受：',
+                    benefitMultilingual: '多語言學習',
+                    benefitAITutor: 'AI 助教',
+                    benefitTutoring: '作業輔導',
+                    benefitStorybook: '繪本朗讀'
                 }
             },
             'en': {
@@ -1855,6 +1942,37 @@
                             ]
                         }
                     }
+                },
+                login: {
+                    welcomeBack: 'Welcome back!',
+                    email: 'Email',
+                    emailPlaceholder: 'your@email.com',
+                    password: 'Password',
+                    passwordPlaceholder: '••••••••',
+                    loginBtn: 'Login',
+                    noAccount: "Don't have an account?",
+                    registerNow: 'Register now',
+                    featureMultilingual: 'Multilingual',
+                    featureAI: 'AI Powered',
+                    featurePersonalized: 'Personalized'
+                },
+                signup: {
+                    joinUs: 'Join Us',
+                    startJourney: 'Start Your AI Learning Journey',
+                    signupDesc: 'Register an account and experience diverse AI learning features',
+                    email: 'Email',
+                    emailPlaceholder: 'your@email.com',
+                    password: 'Password',
+                    passwordPlaceholder: 'At least 6 characters',
+                    passwordHint: 'Password must be at least 6 characters long',
+                    signupBtn: 'Create Account',
+                    haveAccount: 'Already have an account?',
+                    backToLogin: 'Back to Login',
+                    benefitsTitle: 'Register to enjoy:',
+                    benefitMultilingual: 'Multilingual Learning',
+                    benefitAITutor: 'AI Tutor',
+                    benefitTutoring: 'Homework Tutoring',
+                    benefitStorybook: 'Storybook Reading'
                 }
             },
             'vi': {
@@ -2080,6 +2198,37 @@
                             ]
                         }
                     }
+                },
+                login: {
+                    welcomeBack: 'Chào mừng trở lại!',
+                    email: 'Email',
+                    emailPlaceholder: 'your@email.com',
+                    password: 'Mật khẩu',
+                    passwordPlaceholder: '••••••••',
+                    loginBtn: 'Đăng nhập',
+                    noAccount: 'Chưa có tài khoản?',
+                    registerNow: 'Đăng ký ngay',
+                    featureMultilingual: 'Đa ngôn ngữ',
+                    featureAI: 'AI Điều khiển',
+                    featurePersonalized: 'Cá nhân hóa'
+                },
+                signup: {
+                    joinUs: 'Tham gia cùng chúng tôi',
+                    startJourney: 'Bắt đầu hành trình học AI của bạn',
+                    signupDesc: 'Đăng ký tài khoản và trải nghiệm các tính năng học AI đa dạng',
+                    email: 'Email',
+                    emailPlaceholder: 'your@email.com',
+                    password: 'Mật khẩu',
+                    passwordPlaceholder: 'Ít nhất 6 ký tự',
+                    passwordHint: 'Mật khẩu phải có ít nhất 6 ký tự',
+                    signupBtn: 'Tạo tài khoản',
+                    haveAccount: 'Đã có tài khoản?',
+                    backToLogin: 'Quay lại đăng nhập',
+                    benefitsTitle: 'Đăng ký để tận hưởng:',
+                    benefitMultilingual: 'Học đa ngôn ngữ',
+                    benefitAITutor: 'Gia sư AI',
+                    benefitTutoring: 'Gia sư bài tập',
+                    benefitStorybook: 'Đọc truyện tranh'
                 }
             },
             'ja': {
@@ -2305,6 +2454,37 @@
                             ]
                         }
                     }
+                },
+                login: {
+                    welcomeBack: 'おかえりなさい！',
+                    email: 'メールアドレス',
+                    emailPlaceholder: 'your@email.com',
+                    password: 'パスワード',
+                    passwordPlaceholder: '••••••••',
+                    loginBtn: 'ログイン',
+                    noAccount: 'アカウントをお持ちでないですか？',
+                    registerNow: '今すぐ登録',
+                    featureMultilingual: '多言語',
+                    featureAI: 'AI駆動',
+                    featurePersonalized: 'パーソナライズ'
+                },
+                signup: {
+                    joinUs: '参加する',
+                    startJourney: 'AI学習の旅を始めましょう',
+                    signupDesc: 'アカウントを登録して、多様なAI学習機能を体験',
+                    email: 'メールアドレス',
+                    emailPlaceholder: 'your@email.com',
+                    password: 'パスワード',
+                    passwordPlaceholder: '6文字以上',
+                    passwordHint: 'パスワードは6文字以上である必要があります',
+                    signupBtn: 'アカウント作成',
+                    haveAccount: 'すでにアカウントをお持ちですか？',
+                    backToLogin: 'ログインに戻る',
+                    benefitsTitle: '登録して楽しむ：',
+                    benefitMultilingual: '多言語学習',
+                    benefitAITutor: 'AIチューター',
+                    benefitTutoring: '宿題指導',
+                    benefitStorybook: '絵本の読み聞かせ'
                 }
             }
         };
