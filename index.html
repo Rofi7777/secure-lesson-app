@@ -264,8 +264,8 @@
                            class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 focus:outline-none text-white placeholder-white/50 transition-all"
                            data-translate-key="login.passwordPlaceholder" placeholder="••••••••">
                 </div>
-                <button type="submit" 
-                        class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-lg hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 focus:outline-none focus:ring-4 focus:ring-yellow-400/50 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                <button type="submit" id="login-submit-btn"
+                        class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-lg hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 focus:outline-none focus:ring-4 focus:ring-yellow-400/50 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                     <span data-translate-key="login.loginBtn">登入</span>
                     <i class="fas fa-arrow-right"></i>
                 </button>
@@ -1179,34 +1179,90 @@
 
         loginForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Get elements fresh to avoid stale references
+            const loginError = document.getElementById('login-error');
+            const loginEmail = document.getElementById('login-email');
+            const loginPassword = document.getElementById('login-password');
+            const loginSubmitBtn = loginForm.querySelector('button[type="submit"]');
+            
+            if (!loginError || !loginEmail || !loginPassword) {
+                console.error('Login form elements not found');
+                return;
+            }
+            
             loginError.classList.add('hidden');
             
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value;
             
-            try {
-                const loginData = await handleLogin(email, password);
-                isAuthenticated = true;
-                
-                // Check if user is authorized
-                const { data: authorizedUser, error: authCheckError } = await supabase
-                    .from('authorized_users')
-                    .select('id, is_active')
-                    .eq('user_id', loginData.user.id)
-                    .eq('is_active', true)
-                    .single();
-                
-                if (authCheckError || !authorizedUser) {
-                    await handleLogout();
-                    loginError.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>您的帳號尚未獲得使用權限，請聯繫管理員。';
-                    loginError.classList.remove('hidden');
-                    return;
-                }
-                
-                showMainApp();
-            } catch (error) {
-                loginError.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${error.message || '登入失敗，請檢查您的帳號密碼'}`;
+            if (!email || !password) {
+                loginError.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>請輸入電子郵件和密碼';
                 loginError.classList.remove('hidden');
+                return;
+            }
+            
+            // Disable button and show loading state
+            if (loginSubmitBtn) {
+                loginSubmitBtn.disabled = true;
+                const originalText = loginSubmitBtn.innerHTML;
+                loginSubmitBtn.innerHTML = '<div class="loader mx-auto"></div><span class="ml-2">登入中...</span>';
+                
+                try {
+                    const loginData = await handleLogin(email, password);
+                    isAuthenticated = true;
+                    
+                    // Check if user is authorized
+                    const { data: authorizedUser, error: authCheckError } = await supabase
+                        .from('authorized_users')
+                        .select('id, is_active')
+                        .eq('user_id', loginData.user.id)
+                        .eq('is_active', true)
+                        .single();
+                    
+                    if (authCheckError || !authorizedUser) {
+                        await handleLogout();
+                        loginError.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>您的帳號尚未獲得使用權限，請聯繫管理員。';
+                        loginError.classList.remove('hidden');
+                        loginSubmitBtn.disabled = false;
+                        loginSubmitBtn.innerHTML = originalText;
+                        return;
+                    }
+                    
+                    showMainApp();
+                } catch (error) {
+                    console.error('Login error:', error);
+                    loginError.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${error.message || '登入失敗，請檢查您的帳號密碼'}`;
+                    loginError.classList.remove('hidden');
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.innerHTML = originalText;
+                }
+            } else {
+                // Fallback if button not found
+                try {
+                    const loginData = await handleLogin(email, password);
+                    isAuthenticated = true;
+                    
+                    const { data: authorizedUser, error: authCheckError } = await supabase
+                        .from('authorized_users')
+                        .select('id, is_active')
+                        .eq('user_id', loginData.user.id)
+                        .eq('is_active', true)
+                        .single();
+                    
+                    if (authCheckError || !authorizedUser) {
+                        await handleLogout();
+                        loginError.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>您的帳號尚未獲得使用權限，請聯繫管理員。';
+                        loginError.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    showMainApp();
+                } catch (error) {
+                    console.error('Login error:', error);
+                    loginError.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${error.message || '登入失敗，請檢查您的帳號密碼'}`;
+                    loginError.classList.remove('hidden');
+                }
             }
         });
 
