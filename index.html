@@ -197,78 +197,167 @@
 </head>
 <body class="app-bg">
     <!-- Login Modal -->
-    <div id="login-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">歡迎使用</h2>
-                <p class="text-gray-600">請登入以繼續使用服務</p>
+    <!-- Login Modal - Redesigned -->
+    <div id="login-modal" class="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 z-50 flex items-center justify-center p-4 overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+            <div class="absolute top-1/2 left-1/2 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+        </div>
+        
+        <div class="relative bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl max-w-md w-full p-8 md:p-10 border-2 border-white/20">
+            <!-- Logo/Brand Section -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 rounded-2xl mb-4 shadow-lg transform hover:scale-110 transition-transform">
+                    <i class="fas fa-rocket text-4xl text-white"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
+                    LingoVerse AI
+                </h2>
+                <p class="text-indigo-200 text-lg">您的 AI 學習宇宙</p>
+                <p class="text-white/80 text-sm mt-2">歡迎回來！請登入以繼續您的學習旅程</p>
             </div>
             
-            <div id="login-error" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md text-sm"></div>
+            <div id="login-error" class="hidden mb-4 bg-red-500/20 backdrop-blur-sm border-l-4 border-red-400 text-red-100 p-4 rounded-lg text-sm"></div>
             
-            <form id="login-form" class="space-y-4">
+            <form id="login-form" class="space-y-5">
                 <div>
-                    <label for="login-email" class="block text-sm font-medium text-gray-700 mb-2">電子郵件</label>
+                    <label for="login-email" class="block text-sm font-medium text-white/90 mb-2">
+                        <i class="fas fa-envelope mr-2 text-indigo-300"></i>電子郵件
+                    </label>
                     <input type="email" id="login-email" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                           class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 focus:outline-none text-white placeholder-white/50 transition-all"
                            placeholder="your@email.com">
                 </div>
                 <div>
-                    <label for="login-password" class="block text-sm font-medium text-gray-700 mb-2">密碼</label>
+                    <label for="login-password" class="block text-sm font-medium text-white/90 mb-2">
+                        <i class="fas fa-lock mr-2 text-indigo-300"></i>密碼
+                    </label>
                     <input type="password" id="login-password" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                           class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 focus:outline-none text-white placeholder-white/50 transition-all"
                            placeholder="••••••••">
                 </div>
                 <button type="submit" 
-                        class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all transform hover:scale-105">
-                    登入
+                        class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-lg hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 focus:outline-none focus:ring-4 focus:ring-yellow-400/50 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                    <span>登入</span>
+                    <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
             
             <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600">
+                <p class="text-sm text-white/70">
                     還沒有帳號？ 
-                    <a href="#" id="show-signup" class="text-indigo-600 hover:text-indigo-800 font-medium">立即註冊</a>
+                    <a href="#" id="show-signup" class="text-yellow-300 hover:text-yellow-200 font-semibold transition-colors inline-flex items-center gap-1">
+                        立即註冊
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </a>
                 </p>
+            </div>
+            
+            <!-- Feature Highlights -->
+            <div class="mt-8 pt-6 border-t border-white/20">
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-globe text-2xl text-indigo-300 mb-2"></i>
+                        <p class="text-xs text-white/70">多語言</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-brain text-2xl text-purple-300 mb-2"></i>
+                        <p class="text-xs text-white/70">AI 驅動</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-star text-2xl text-pink-300 mb-2"></i>
+                        <p class="text-xs text-white/70">個人化</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Signup Modal -->
-    <div id="signup-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">建立帳號</h2>
-                <p class="text-gray-600">註冊以開始使用服務</p>
+    <!-- Signup Modal - Redesigned -->
+    <div id="signup-modal" class="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 z-50 flex items-center justify-center p-4 hidden overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+            <div class="absolute top-1/2 left-1/2 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+        </div>
+        
+        <div class="relative bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl max-w-md w-full p-8 md:p-10 border-2 border-white/20">
+            <!-- Logo/Brand Section -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 via-cyan-400 to-blue-400 rounded-2xl mb-4 shadow-lg transform hover:scale-110 transition-transform">
+                    <i class="fas fa-user-plus text-4xl text-white"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
+                    加入我們
+                </h2>
+                <p class="text-indigo-200 text-lg">開始您的 AI 學習之旅</p>
+                <p class="text-white/80 text-sm mt-2">註冊帳號，立即體驗多樣化的 AI 學習功能</p>
             </div>
             
-            <div id="signup-error" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md text-sm"></div>
-            <div id="signup-success" class="hidden mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md text-sm"></div>
+            <div id="signup-error" class="hidden mb-4 bg-red-500/20 backdrop-blur-sm border-l-4 border-red-400 text-red-100 p-4 rounded-lg text-sm"></div>
+            <div id="signup-success" class="hidden mb-4 bg-green-500/20 backdrop-blur-sm border-l-4 border-green-400 text-green-100 p-4 rounded-lg text-sm"></div>
             
-            <form id="signup-form" class="space-y-4">
+            <form id="signup-form" class="space-y-5">
                 <div>
-                    <label for="signup-email" class="block text-sm font-medium text-gray-700 mb-2">電子郵件</label>
+                    <label for="signup-email" class="block text-sm font-medium text-white/90 mb-2">
+                        <i class="fas fa-envelope mr-2 text-indigo-300"></i>電子郵件
+                    </label>
                     <input type="email" id="signup-email" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                           class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 focus:outline-none text-white placeholder-white/50 transition-all"
                            placeholder="your@email.com">
                 </div>
                 <div>
-                    <label for="signup-password" class="block text-sm font-medium text-gray-700 mb-2">密碼</label>
+                    <label for="signup-password" class="block text-sm font-medium text-white/90 mb-2">
+                        <i class="fas fa-lock mr-2 text-indigo-300"></i>密碼
+                    </label>
                     <input type="password" id="signup-password" required minlength="6"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                           class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 focus:outline-none text-white placeholder-white/50 transition-all"
                            placeholder="至少6個字元">
+                    <p class="text-xs text-white/60 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>密碼長度至少需要 6 個字元
+                    </p>
                 </div>
                 <button type="submit"
-                        class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all transform hover:scale-105">
-                    註冊
+                        class="w-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500 text-white font-bold py-4 px-6 rounded-lg hover:from-emerald-600 hover:via-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-4 focus:ring-yellow-400/50 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                    <span>建立帳號</span>
+                    <i class="fas fa-rocket"></i>
                 </button>
             </form>
             
             <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600">
+                <p class="text-sm text-white/70">
                     已有帳號？ 
-                    <a href="#" id="show-login" class="text-indigo-600 hover:text-indigo-800 font-medium">返回登入</a>
+                    <a href="#" id="show-login" class="text-yellow-300 hover:text-yellow-200 font-semibold transition-colors inline-flex items-center gap-1">
+                        返回登入
+                        <i class="fas fa-chevron-left text-xs"></i>
+                    </a>
                 </p>
+            </div>
+            
+            <!-- Benefits Section -->
+            <div class="mt-8 pt-6 border-t border-white/20">
+                <p class="text-sm font-semibold text-white/90 mb-4 text-center">註冊即可享受：</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex items-center gap-2 bg-white/5 rounded-lg p-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span class="text-xs text-white/80">多語言學習</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/5 rounded-lg p-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span class="text-xs text-white/80">AI 助教</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/5 rounded-lg p-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span class="text-xs text-white/80">作業輔導</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white/5 rounded-lg p-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span class="text-xs text-white/80">繪本朗讀</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -928,14 +1017,14 @@
                 
                 if (authCheckError || !authorizedUser) {
                     await handleLogout();
-                    loginError.textContent = '您的帳號尚未獲得使用權限，請聯繫管理員。';
+                    loginError.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>您的帳號尚未獲得使用權限，請聯繫管理員。';
                     loginError.classList.remove('hidden');
                     return;
                 }
                 
                 showMainApp();
             } catch (error) {
-                loginError.textContent = error.message || '登入失敗，請檢查您的帳號密碼';
+                loginError.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${error.message || '登入失敗，請檢查您的帳號密碼'}`;
                 loginError.classList.remove('hidden');
             }
         });
@@ -950,14 +1039,16 @@
             
             try {
                 await handleSignup(email, password);
-                signupSuccess.textContent = '註冊成功！請檢查您的電子郵件以驗證帳號（如果啟用了郵件驗證）。';
+                signupSuccess.innerHTML = '<i class="fas fa-check-circle mr-2"></i>註冊成功！請檢查您的電子郵件以驗證帳號（如果啟用了郵件驗證）。';
                 signupSuccess.classList.remove('hidden');
+                signupError.classList.add('hidden');
                 setTimeout(() => {
                     showLoginModal();
                 }, 2000);
             } catch (error) {
-                signupError.textContent = error.message || '註冊失敗，請稍後再試';
+                signupError.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${error.message || '註冊失敗，請稍後再試'}`;
                 signupError.classList.remove('hidden');
+                signupSuccess.classList.add('hidden');
             }
         });
 
@@ -994,7 +1085,7 @@
                         await supabase.auth.signOut();
                         const loginError = document.getElementById('login-error');
                         if (loginError) {
-                            loginError.textContent = '您的帳號尚未獲得使用權限，請聯繫管理員。';
+                            loginError.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>您的帳號尚未獲得使用權限，請聯繫管理員。';
                             loginError.classList.remove('hidden');
                         }
                         showLoginModal();
