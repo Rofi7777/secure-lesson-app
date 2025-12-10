@@ -1080,15 +1080,35 @@
         }
     }
 
+    // Helper function to add timeout to promises
+    function withTimeout(promise, timeoutMs, errorMessage) {
+        let timeoutId;
+        const timeoutPromise = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error(errorMessage || '請求超時，請稍後再試')), timeoutMs);
+        });
+        
+        return Promise.race([
+            promise.finally(() => {
+                if (timeoutId) clearTimeout(timeoutId);
+            }),
+            timeoutPromise
+        ]).catch(error => {
+            if (timeoutId) clearTimeout(timeoutId);
+            throw error;
+        });
+    }
+
     async function handleLogin(email, password) {
         if (!supabase) {
             throw new Error('Supabase not configured');
         }
         
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const loginPromise = supabase.auth.signInWithPassword({
             email,
             password
         });
+        
+        const { data, error } = await withTimeout(loginPromise, 15000, '登入請求超時，請檢查網絡連接');
         
         if (error) throw error;
         return data;
@@ -1208,34 +1228,67 @@
                 const originalText = loginSubmitBtn.innerHTML;
                 loginSubmitBtn.innerHTML = '<div class="loader mx-auto"></div><span class="ml-2">登入中...</span>';
                 
+                // Function to restore button state
+                const restoreButton = () => {
+                    if (loginSubmitBtn) {
+                        loginSubmitBtn.disabled = false;
+                        loginSubmitBtn.innerHTML = originalText;
+                    }
+                };
+                
                 try {
+                    console.log('Starting login process...');
                     const loginData = await handleLogin(email, password);
+                    console.log('Login successful, checking authorization...');
                     isAuthenticated = true;
                     
-                    // Check if user is authorized
-                    const { data: authorizedUser, error: authCheckError } = await supabase
+                    // Check if user is authorized with timeout
+                    const authCheckPromise = supabase
                         .from('authorized_users')
                         .select('id, is_active')
                         .eq('user_id', loginData.user.id)
                         .eq('is_active', true)
                         .single();
                     
+                    const { data: authorizedUser, error: authCheckError } = await withTimeout(
+                        authCheckPromise, 
+                        10000, 
+                        '授權檢查超時，請稍後再試'
+                    );
+                    
+                    console.log('Authorization check result:', { authorizedUser, authCheckError });
+                    
                     if (authCheckError || !authorizedUser) {
+                        console.warn('User not authorized:', authCheckError);
                         await handleLogout();
                         loginError.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>您的帳號尚未獲得使用權限，請聯繫管理員。';
                         loginError.classList.remove('hidden');
-                        loginSubmitBtn.disabled = false;
-                        loginSubmitBtn.innerHTML = originalText;
+                        restoreButton();
                         return;
                     }
                     
+                    console.log('Login complete, showing main app...');
+                    restoreButton();
                     showMainApp();
                 } catch (error) {
                     console.error('Login error:', error);
-                    loginError.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${error.message || '登入失敗，請檢查您的帳號密碼'}`;
+                    let errorMessage = '登入失敗，請檢查您的帳號密碼';
+                    
+                    if (error.message) {
+                        if (error.message.includes('超時')) {
+                            errorMessage = error.message;
+                        } else if (error.message.includes('Invalid login credentials')) {
+                            errorMessage = '帳號或密碼錯誤';
+                        } else if (error.message.includes('Email not confirmed')) {
+                            errorMessage = '請先驗證您的電子郵件';
+                        } else {
+                            errorMessage = error.message;
+                        }
+                    }
+                    
+                    loginError.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${errorMessage}`;
                     loginError.classList.remove('hidden');
-                    loginSubmitBtn.disabled = false;
-                    loginSubmitBtn.innerHTML = originalText;
+                    restoreButton();
                 }
             } else {
                 // Fallback if button not found
@@ -1243,12 +1296,18 @@
                     const loginData = await handleLogin(email, password);
                     isAuthenticated = true;
                     
-                    const { data: authorizedUser, error: authCheckError } = await supabase
+                    const authCheckPromise = supabase
                         .from('authorized_users')
                         .select('id, is_active')
                         .eq('user_id', loginData.user.id)
                         .eq('is_active', true)
                         .single();
+                    
+                    const { data: authorizedUser, error: authCheckError } = await withTimeout(
+                        authCheckPromise,
+                        10000,
+                        '授權檢查超時，請稍後再試'
+                    );
                     
                     if (authCheckError || !authorizedUser) {
                         await handleLogout();
@@ -1260,7 +1319,17 @@
                     showMainApp();
                 } catch (error) {
                     console.error('Login error:', error);
-                    loginError.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${error.message || '登入失敗，請檢查您的帳號密碼'}`;
+                    let errorMessage = '登入失敗，請檢查您的帳號密碼';
+                    if (error.message) {
+                        if (error.message.includes('超時')) {
+                            errorMessage = error.message;
+                        } else if (error.message.includes('Invalid login credentials')) {
+                            errorMessage = '帳號或密碼錯誤';
+                        } else {
+                            errorMessage = error.message;
+                        }
+                    }
+                    loginError.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${errorMessage}`;
                     loginError.classList.remove('hidden');
                 }
             }
