@@ -134,8 +134,40 @@ serve(async (req) => {
       )
     }
 
-    // Parse request body
-    const payload: RequestPayload = await req.json()
+    // Parse request body with error handling
+    let payload: RequestPayload
+    try {
+      const bodyText = await req.text()
+      if (!bodyText || bodyText.trim() === '') {
+        return new Response(
+          JSON.stringify({ error: 'Request body is empty' }),
+          { 
+            status: 400, 
+            headers: { 
+              'Content-Type': 'application/json',
+              ...corsHeaders
+            } 
+          }
+        )
+      }
+      payload = JSON.parse(bodyText)
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid JSON in request body',
+          details: parseError instanceof Error ? parseError.message : 'Unknown error'
+        }),
+        { 
+          status: 400, 
+          headers: { 
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          } 
+        }
+      )
+    }
+
     const { endpoint, model, contents, systemInstruction, generationConfig } = payload
 
     if (!endpoint || !model) {
