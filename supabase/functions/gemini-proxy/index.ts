@@ -1,10 +1,27 @@
 // Supabase Edge Function: Gemini API Proxy
 // This function protects your Gemini API key by handling all API calls server-side
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// deno-lint-ignore-file no-explicit-any
+// @deno-types="https://esm.sh/@supabase/supabase-js@2.42.3"
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') || ''
+// Type declarations for Deno globals
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined
+  }
+}
+
+// Deno provides Web API globals
+declare const Response: typeof globalThis.Response
+declare const fetch: typeof globalThis.fetch
+declare const console: typeof globalThis.console
+
+// @ts-ignore - Deno import (works at runtime in Supabase Edge Functions)
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+// @ts-ignore - ESM import (works at runtime in Supabase Edge Functions)
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.3";
+
+const GEMINI_API_KEY = (typeof Deno !== "undefined" && Deno?.env?.get?.('GEMINI_API_KEY')) || '';
 
 interface RequestPayload {
   endpoint: string
@@ -48,8 +65,7 @@ serve(async (req) => {
       )
     }
 
-    // Initialize Supabase client
-    // In Supabase Edge Functions, these are automatically available
+    // Initialize Supabase client for user authentication
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') || ''
     const supabase = createClient(supabaseUrl, supabaseKey, {
@@ -69,6 +85,47 @@ serve(async (req) => {
         JSON.stringify({ error: 'Unauthorized' }),
         { 
           status: 401, 
+          headers: { 
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          } 
+        }
+      )
+    }
+
+    // Check if user is authorized to use the service
+    // Use service_role key to bypass RLS for this check
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+    if (!serviceRoleKey) {
+      console.error('SUPABASE_SERVICE_ROLE_KEY not set')
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { 
+          status: 500, 
+          headers: { 
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          } 
+        }
+      )
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
+    const { data: authorizedUser, error: authCheckError } = await supabaseAdmin
+      .from('authorized_users')
+      .select('id, is_active')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .single()
+
+    if (authCheckError || !authorizedUser) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Access denied',
+          message: '您的帳號尚未獲得使用權限，請聯繫管理員。'
+        }),
+        { 
+          status: 403, 
           headers: { 
             'Content-Type': 'application/json',
             ...corsHeaders

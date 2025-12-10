@@ -844,8 +844,24 @@
             const password = document.getElementById('login-password').value;
             
             try {
-                await handleLogin(email, password);
+                const loginData = await handleLogin(email, password);
                 isAuthenticated = true;
+                
+                // Check if user is authorized
+                const { data: authorizedUser, error: authCheckError } = await supabase
+                    .from('authorized_users')
+                    .select('id, is_active')
+                    .eq('user_id', loginData.user.id)
+                    .eq('is_active', true)
+                    .single();
+                
+                if (authCheckError || !authorizedUser) {
+                    await handleLogout();
+                    loginError.textContent = '您的帳號尚未獲得使用權限，請聯繫管理員。';
+                    loginError.classList.remove('hidden');
+                    return;
+                }
+                
                 showMainApp();
             } catch (error) {
                 loginError.textContent = error.message || '登入失敗，請檢查您的帳號密碼';
@@ -892,8 +908,28 @@
 
         // Listen for auth state changes
         if (supabase) {
-            supabase.auth.onAuthStateChange((event, session) => {
+            supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session) {
+                    // Check if user is authorized
+                    const { data: authorizedUser, error: authCheckError } = await supabase
+                        .from('authorized_users')
+                        .select('id, is_active')
+                        .eq('user_id', session.user.id)
+                        .eq('is_active', true)
+                        .single();
+                    
+                    if (authCheckError || !authorizedUser) {
+                        // User not authorized, sign them out
+                        await supabase.auth.signOut();
+                        const loginError = document.getElementById('login-error');
+                        if (loginError) {
+                            loginError.textContent = '您的帳號尚未獲得使用權限，請聯繫管理員。';
+                            loginError.classList.remove('hidden');
+                        }
+                        showLoginModal();
+                        return;
+                    }
+                    
                     isAuthenticated = true;
                     currentUser = session.user;
                     showMainApp();
