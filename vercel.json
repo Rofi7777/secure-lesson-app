@@ -1,16 +1,10 @@
 {
   "version": 2,
   "framework": null,
-  "buildCommand": "",
-  "outputDirectory": ".",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/index.html",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
