@@ -1060,7 +1060,10 @@
                         auth: {
                             persistSession: true,
                             autoRefreshToken: true,
-                            detectSessionInUrl: true
+                            detectSessionInUrl: true,
+                            storage: window.localStorage,
+                            storageKey: 'sb-auth-token',
+                            flowType: 'pkce'
                         }
                     });
                     console.log('✓ Supabase client initialized successfully');
@@ -1131,20 +1134,70 @@
 
     // --- Authentication Functions ---
     async function checkAuth() {
+        // Wait for Supabase to be initialized
+        let retries = 0;
+        while (!supabase && retries < 20) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            retries++;
+        }
+        
         if (!supabase) {
             console.error('Supabase not initialized. Please configure SUPABASE_URL and SUPABASE_ANON_KEY.');
             return false;
         }
         
         try {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (error) throw error;
+            console.log('Checking authentication state...');
+            const { data: { session }, error } = await withTimeout(
+                supabase.auth.getSession(),
+                10000,
+                '認證檢查超時'
+            );
             
-            if (session) {
+            if (error) {
+                console.error('Auth check error:', error);
+                // Don't throw for "Invalid Refresh Token" - it's normal when not logged in
+                if (error.message && !error.message.includes('Invalid Refresh Token')) {
+                    throw error;
+                }
+                return false;
+            }
+            
+            if (session && session.user) {
+                console.log('Session found, user:', session.user.email);
                 isAuthenticated = true;
                 currentUser = session.user;
-                return true;
+                
+                // Verify user is still authorized
+                try {
+                    const { data: authorizedUser, error: authCheckError } = await withTimeout(
+                        supabase
+                            .from('authorized_users')
+                            .select('id, is_active')
+                            .eq('user_id', session.user.id)
+                            .eq('is_active', true)
+                            .single(),
+                        5000,
+                        '授權檢查超時'
+                    );
+                    
+                    if (authCheckError || !authorizedUser) {
+                        console.warn('User session exists but not authorized, signing out...');
+                        await supabase.auth.signOut();
+                        isAuthenticated = false;
+                        currentUser = null;
+                        return false;
+                    }
+                    
+                    return true;
+                } catch (authError) {
+                    console.error('Authorization check failed:', authError);
+                    // If authorization check fails, still allow session (might be network issue)
+                    return true;
+                }
             }
+            
+            console.log('No active session found');
             return false;
         } catch (error) {
             console.error('Auth check error:', error);
@@ -1574,37 +1627,61 @@
         // Listen for auth state changes
         if (supabase) {
             supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log('Auth state changed:', event, session ? 'has session' : 'no session');
+                
                 if (event === 'SIGNED_IN' && session) {
-                    // Check if user is authorized
-                    const { data: authorizedUser, error: authCheckError } = await supabase
-                        .from('authorized_users')
-                        .select('id, is_active')
-                        .eq('user_id', session.user.id)
-                        .eq('is_active', true)
-                        .single();
-                    
-                    if (authCheckError || !authorizedUser) {
-                        // User not authorized, sign them out
-                        await supabase.auth.signOut();
-                        const loginError = document.getElementById('login-error');
-                        if (loginError) {
-                            loginError.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>您的帳號尚未獲得使用權限，請聯繫管理員。';
-                            loginError.classList.remove('hidden');
+                    try {
+                        // Check if user is authorized
+                        const { data: authorizedUser, error: authCheckError } = await withTimeout(
+                            supabase
+                                .from('authorized_users')
+                                .select('id, is_active')
+                                .eq('user_id', session.user.id)
+                                .eq('is_active', true)
+                                .single(),
+                            5000,
+                            '授權檢查超時'
+                        );
+                        
+                        if (authCheckError || !authorizedUser) {
+                            // User not authorized, sign them out
+                            console.warn('User not authorized, signing out...');
+                            await supabase.auth.signOut();
+                            const loginError = document.getElementById('login-error');
+                            if (loginError) {
+                                loginError.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>您的帳號尚未獲得使用權限，請聯繫管理員。';
+                                loginError.classList.remove('hidden');
+                            }
+                            showLoginModal();
+                            return;
                         }
+                        
+                        isAuthenticated = true;
+                        currentUser = session.user;
+                        console.log('User signed in successfully:', session.user.email);
+                        showMainApp();
+                        logoutBtn?.classList.remove('hidden');
+                        checkAndShowAdminButton();
+                    } catch (error) {
+                        console.error('Error during sign in:', error);
+                        // Don't sign out on network errors, just show login
                         showLoginModal();
-                        return;
                     }
-                    
-                    isAuthenticated = true;
-                    currentUser = session.user;
-                    showMainApp();
-                    logoutBtn?.classList.remove('hidden');
-                    checkAndShowAdminButton();
                 } else if (event === 'SIGNED_OUT') {
+                    console.log('User signed out');
                     isAuthenticated = false;
                     currentUser = null;
                     showLoginModal();
                     logoutBtn?.classList.add('hidden');
+                } else if (event === 'TOKEN_REFRESHED' && session) {
+                    // Token refreshed, update session
+                    console.log('Token refreshed');
+                    isAuthenticated = true;
+                    currentUser = session.user;
+                } else if (event === 'USER_UPDATED' && session) {
+                    // User updated, refresh user data
+                    console.log('User updated');
+                    currentUser = session.user;
                 }
             });
         }
@@ -1614,11 +1691,21 @@
         // Setup authentication UI first
         setupAuthUI();
         
+        // Wait a bit for Supabase to fully initialize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Check if user is already authenticated
-        const authenticated = await checkAuth();
-        if (authenticated) {
-            showMainApp();
-        } else {
+        try {
+            const authenticated = await checkAuth();
+            if (authenticated) {
+                console.log('User is authenticated, showing main app...');
+                showMainApp();
+            } else {
+                console.log('User is not authenticated, showing login modal...');
+                showLoginModal();
+            }
+        } catch (error) {
+            console.error('Error checking auth on page load:', error);
             showLoginModal();
         }
 
