@@ -198,7 +198,7 @@
 <body class="app-bg">
     <!-- Login Modal -->
     <!-- Login Modal - Redesigned for Kids -->
-    <div id="login-modal" class="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 z-50 flex items-center justify-center p-4 overflow-hidden">
+    <div id="login-modal" class="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 z-50 flex items-center justify-center p-4 overflow-y-auto">
         <!-- Animated Background Elements - More playful for kids -->
         <div class="absolute inset-0 overflow-hidden">
             <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -221,25 +221,25 @@
             </select>
         </div>
         
-        <div class="relative bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl max-w-md w-full p-8 md:p-10 border-2 border-white/20">
+        <div class="relative bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl max-w-md w-full p-6 md:p-8 lg:p-10 my-4 md:my-8 border-2 border-white/20 max-h-[95vh] overflow-y-auto">
             <!-- Main Title -->
             <div class="text-center mb-2">
-                <h1 class="text-3xl md:text-4xl font-bold text-white mb-1">
+                <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1">
                     <span class="bg-gradient-to-r from-cyan-300 via-blue-300 to-indigo-300 bg-clip-text text-transparent">多語言</span>
                     <span class="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent">學習平台</span>
                 </h1>
             </div>
             
             <!-- Logo/Brand Section -->
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 rounded-3xl mb-4 shadow-lg transform hover:scale-110 transition-transform animate-bounce" style="animation-duration: 2s;">
-                    <i class="fas fa-rocket text-5xl text-white"></i>
+            <div class="text-center mb-6 md:mb-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 rounded-3xl mb-3 md:mb-4 shadow-lg transform hover:scale-110 transition-transform animate-bounce" style="animation-duration: 2s;">
+                    <i class="fas fa-rocket text-4xl md:text-5xl text-white"></i>
                 </div>
-                <h2 class="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-white via-yellow-200 to-pink-200 bg-clip-text text-transparent">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 bg-gradient-to-r from-white via-yellow-200 to-pink-200 bg-clip-text text-transparent">
                     LingoVerse AI
                 </h2>
-                <p class="text-indigo-200 text-lg font-medium">您的 AI 學習宇宙 🌟</p>
-                <p class="text-white/90 text-sm mt-2 flex items-center justify-center gap-2">
+                <p class="text-indigo-200 text-base md:text-lg font-medium">您的 AI 學習宇宙 🌟</p>
+                <p class="text-white/90 text-xs md:text-sm mt-2 flex items-center justify-center gap-2">
                     <span>歡迎回來！</span>
                     <span class="animate-pulse">✨</span>
                 </p>
@@ -302,7 +302,7 @@
     </div>
 
     <!-- Signup Modal - Redesigned for Kids -->
-    <div id="signup-modal" class="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 z-50 flex items-center justify-center p-4 hidden overflow-hidden">
+    <div id="signup-modal" class="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
         <!-- Animated Background Elements - More playful for kids -->
         <div class="absolute inset-0 overflow-hidden">
             <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -316,8 +316,8 @@
         </div>
         
         <!-- Language Switcher - Top Right -->
-        <div class="absolute top-4 right-4 md:top-6 md:right-8 z-20">
-            <select id="signup-language-switcher" class="language-select bg-white/20 backdrop-blur-sm text-white rounded-lg px-4 py-2 border-2 border-white/30 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm font-medium cursor-pointer hover:bg-white/30 transition-all">
+        <div class="absolute top-2 right-2 md:top-4 md:right-4 z-20">
+            <select id="signup-language-switcher" class="language-select bg-white/20 backdrop-blur-sm text-white rounded-lg px-2 py-1.5 md:px-4 md:py-2 border-2 border-white/30 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-xs md:text-sm font-medium cursor-pointer hover:bg-white/30 transition-all">
                 <option value="zh-Hant">🇹🇼 繁體中文</option>
                 <option value="en">🇺🇸 English</option>
                 <option value="vi">🇻🇳 Tiếng Việt</option>
@@ -325,25 +325,25 @@
             </select>
         </div>
         
-        <div class="relative bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl max-w-md w-full p-8 md:p-10 border-2 border-white/20">
+        <div class="relative bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl max-w-md w-full p-6 md:p-8 lg:p-10 my-4 md:my-8 border-2 border-white/20 max-h-[95vh] overflow-y-auto">
             <!-- Main Title -->
             <div class="text-center mb-2">
-                <h1 class="text-3xl md:text-4xl font-bold text-white mb-1">
+                <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1">
                     <span class="bg-gradient-to-r from-cyan-300 via-blue-300 to-indigo-300 bg-clip-text text-transparent">多語言</span>
                     <span class="bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent">學習平台</span>
                 </h1>
             </div>
             
             <!-- Logo/Brand Section -->
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-400 via-cyan-400 to-blue-400 rounded-3xl mb-4 shadow-lg transform hover:scale-110 transition-transform animate-bounce" style="animation-duration: 2s;">
-                    <i class="fas fa-user-plus text-5xl text-white"></i>
+            <div class="text-center mb-6 md:mb-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-emerald-400 via-cyan-400 to-blue-400 rounded-3xl mb-3 md:mb-4 shadow-lg transform hover:scale-110 transition-transform animate-bounce" style="animation-duration: 2s;">
+                    <i class="fas fa-user-plus text-4xl md:text-5xl text-white"></i>
                 </div>
-                <h2 class="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-white via-cyan-200 to-emerald-200 bg-clip-text text-transparent">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 bg-gradient-to-r from-white via-cyan-200 to-emerald-200 bg-clip-text text-transparent">
                     加入我們 🎉
                 </h2>
-                <p class="text-indigo-200 text-lg font-medium">開始您的 AI 學習之旅 ✨</p>
-                <p class="text-white/90 text-sm mt-2 flex items-center justify-center gap-2">
+                <p class="text-indigo-200 text-base md:text-lg font-medium">開始您的 AI 學習之旅 ✨</p>
+                <p class="text-white/90 text-xs md:text-sm mt-2 flex items-center justify-center gap-2">
                     <span>註冊帳號，立即體驗多樣化的 AI 學習功能</span>
                 </p>
             </div>
@@ -389,27 +389,27 @@
             </div>
             
             <!-- Benefits Section - More playful for kids -->
-            <div class="mt-8 pt-6 border-t border-white/20">
-                <p class="text-sm font-semibold text-white/90 mb-4 text-center flex items-center justify-center gap-2">
+            <div class="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-white/20">
+                <p class="text-xs md:text-sm font-semibold text-white/90 mb-3 md:mb-4 text-center flex items-center justify-center gap-2">
                     <span>註冊即可享受：</span>
-                    <span class="text-xl animate-bounce">🎁</span>
+                    <span class="text-lg md:text-xl animate-bounce">🎁</span>
                 </p>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20 transform hover:scale-105 transition-transform">
-                        <span class="text-2xl">🌍</span>
-                        <span class="text-sm text-white font-medium">多語言學習</span>
+                <div class="grid grid-cols-2 gap-2 md:gap-3">
+                    <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-3 border border-white/20 transform hover:scale-105 transition-transform">
+                        <span class="text-xl md:text-2xl">🌍</span>
+                        <span class="text-xs md:text-sm text-white font-medium">多語言學習</span>
                     </div>
-                    <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20 transform hover:scale-105 transition-transform">
-                        <span class="text-2xl">🤖</span>
-                        <span class="text-sm text-white font-medium">AI 助教</span>
+                    <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-3 border border-white/20 transform hover:scale-105 transition-transform">
+                        <span class="text-xl md:text-2xl">🤖</span>
+                        <span class="text-xs md:text-sm text-white font-medium">AI 助教</span>
                     </div>
-                    <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20 transform hover:scale-105 transition-transform">
-                        <span class="text-2xl">📚</span>
-                        <span class="text-sm text-white font-medium">作業輔導</span>
+                    <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-3 border border-white/20 transform hover:scale-105 transition-transform">
+                        <span class="text-xl md:text-2xl">📚</span>
+                        <span class="text-xs md:text-sm text-white font-medium">作業輔導</span>
                     </div>
-                    <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20 transform hover:scale-105 transition-transform">
-                        <span class="text-2xl">📖</span>
-                        <span class="text-sm text-white font-medium">繪本朗讀</span>
+                    <div class="flex items-center gap-1 md:gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-3 border border-white/20 transform hover:scale-105 transition-transform">
+                        <span class="text-xl md:text-2xl">📖</span>
+                        <span class="text-xs md:text-sm text-white font-medium">繪本朗讀</span>
                     </div>
                 </div>
             </div>
@@ -1013,8 +1013,12 @@
         document.getElementById('main-app').classList.add('hidden');
         // Sync language switcher
         const loginLangSwitcher = document.getElementById('login-language-switcher');
-        if (loginLangSwitcher && typeof currentLang !== 'undefined') {
-            loginLangSwitcher.value = currentLang || 'zh-Hant';
+        if (loginLangSwitcher) {
+            // Get current language from main switcher or default
+            const mainLangSwitcher = document.getElementById('language-switcher');
+            const currentLangValue = (typeof currentLang !== 'undefined' && currentLang) 
+                || (mainLangSwitcher ? mainLangSwitcher.value : 'zh-Hant');
+            loginLangSwitcher.value = currentLangValue;
         }
     }
 
@@ -1024,8 +1028,12 @@
         document.getElementById('main-app').classList.add('hidden');
         // Sync language switcher
         const signupLangSwitcher = document.getElementById('signup-language-switcher');
-        if (signupLangSwitcher && typeof currentLang !== 'undefined') {
-            signupLangSwitcher.value = currentLang || 'zh-Hant';
+        if (signupLangSwitcher) {
+            // Get current language from main switcher or default
+            const mainLangSwitcher = document.getElementById('language-switcher');
+            const currentLangValue = (typeof currentLang !== 'undefined' && currentLang) 
+                || (mainLangSwitcher ? mainLangSwitcher.value : 'zh-Hant');
+            signupLangSwitcher.value = currentLangValue;
         }
     }
 
@@ -1131,11 +1139,37 @@
         const signupLanguageSwitcher = document.getElementById('signup-language-switcher');
         
         loginLanguageSwitcher?.addEventListener('change', (e) => {
-            setLanguage(e.target.value);
+            if (typeof setLanguage === 'function') {
+                setLanguage(e.target.value);
+            } else {
+                // Fallback: store language preference
+                const lang = e.target.value;
+                if (typeof currentLang !== 'undefined') {
+                    currentLang = lang;
+                }
+                // Update select value in main app if it exists
+                const mainLangSwitcher = document.getElementById('language-switcher');
+                if (mainLangSwitcher) {
+                    mainLangSwitcher.value = lang;
+                }
+            }
         });
         
         signupLanguageSwitcher?.addEventListener('change', (e) => {
-            setLanguage(e.target.value);
+            if (typeof setLanguage === 'function') {
+                setLanguage(e.target.value);
+            } else {
+                // Fallback: store language preference
+                const lang = e.target.value;
+                if (typeof currentLang !== 'undefined') {
+                    currentLang = lang;
+                }
+                // Update select value in main app if it exists
+                const mainLangSwitcher = document.getElementById('language-switcher');
+                if (mainLangSwitcher) {
+                    mainLangSwitcher.value = lang;
+                }
+            }
         });
 
         // Logout button
