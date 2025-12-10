@@ -446,6 +446,9 @@
             <button data-view="ai-tutor-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.aiTutor">AI 助教</button>
             <button data-view="ai-doctor-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.aiDoctor">AI 小醫生</button>
             <button data-view="debate-coach-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.debateCoach">AI 辯論教練</button>
+            <button data-view="my-learning-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.myLearning">
+                <i class="fas fa-book-open mr-2"></i>我的學習
+            </button>
             <button data-view="admin-view" id="admin-nav-btn" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center hidden" style="background-color: rgba(239, 68, 68, 0.3); border: 1px solid rgba(239, 68, 68, 0.5);">
                 <i class="fas fa-shield-alt mr-2"></i>管理員
             </button>
@@ -862,7 +865,113 @@
                 </div>
             </div>
 
-            <!-- (7) Admin Management View -->
+            <!-- (7) My Learning Dashboard View -->
+            <div id="my-learning-view" class="view-content hidden">
+                <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 border-2 border-white/20 text-white">
+                    <h2 class="text-3xl font-bold text-center mb-2" data-translate-key="myLearning.title">
+                        <i class="fas fa-book-open mr-2"></i>我的學習
+                    </h2>
+                    <p class="text-center text-indigo-200 mb-8" data-translate-key="myLearning.subtitle">查看您的學習進度、歷史記錄和收藏</p>
+                    
+                    <!-- Statistics Cards -->
+                    <div id="learning-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-indigo-200 mb-1" data-translate-key="myLearning.stats.lessons">課程</p>
+                                    <p class="text-2xl font-bold" id="stat-lessons">0</p>
+                                </div>
+                                <i class="fas fa-book text-3xl text-indigo-300 opacity-50"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-indigo-200 mb-1" data-translate-key="myLearning.stats.stories">故事</p>
+                                    <p class="text-2xl font-bold" id="stat-stories">0</p>
+                                </div>
+                                <i class="fas fa-book-reader text-3xl text-purple-300 opacity-50"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-indigo-200 mb-1" data-translate-key="myLearning.stats.tutoring">作業輔導</p>
+                                    <p class="text-2xl font-bold" id="stat-tutoring">0</p>
+                                </div>
+                                <i class="fas fa-graduation-cap text-3xl text-pink-300 opacity-50"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-indigo-200 mb-1" data-translate-key="myLearning.stats.favorites">收藏</p>
+                                    <p class="text-2xl font-bold" id="stat-favorites">0</p>
+                                </div>
+                                <i class="fas fa-star text-3xl text-yellow-300 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="flex space-x-2 mb-6 border-b border-white/20 overflow-x-auto">
+                        <button id="my-learning-tab-lessons" class="px-4 py-2 font-medium border-b-2 border-yellow-400 text-yellow-400 whitespace-nowrap" data-translate-key="myLearning.tab.lessons">
+                            課程記錄
+                        </button>
+                        <button id="my-learning-tab-stories" class="px-4 py-2 font-medium border-b-2 border-transparent hover:text-yellow-400 whitespace-nowrap" data-translate-key="myLearning.tab.stories">
+                            故事記錄
+                        </button>
+                        <button id="my-learning-tab-tutoring" class="px-4 py-2 font-medium border-b-2 border-transparent hover:text-yellow-400 whitespace-nowrap" data-translate-key="myLearning.tab.tutoring">
+                            作業輔導
+                        </button>
+                        <button id="my-learning-tab-favorites" class="px-4 py-2 font-medium border-b-2 border-transparent hover:text-yellow-400 whitespace-nowrap" data-translate-key="myLearning.tab.favorites">
+                            我的收藏
+                        </button>
+                    </div>
+
+                    <!-- Lessons Tab -->
+                    <div id="my-learning-lessons-tab" class="space-y-4">
+                        <div id="lessons-container" class="space-y-3">
+                            <div class="text-center text-indigo-200 py-8">
+                                <div class="loader mx-auto mb-2"></div>
+                                <p data-translate-key="myLearning.loading">載入中...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stories Tab -->
+                    <div id="my-learning-stories-tab" class="space-y-4 hidden">
+                        <div id="stories-container" class="space-y-3">
+                            <div class="text-center text-indigo-200 py-8">
+                                <div class="loader mx-auto mb-2"></div>
+                                <p data-translate-key="myLearning.loading">載入中...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tutoring Tab -->
+                    <div id="my-learning-tutoring-tab" class="space-y-4 hidden">
+                        <div id="tutoring-container" class="space-y-3">
+                            <div class="text-center text-indigo-200 py-8">
+                                <div class="loader mx-auto mb-2"></div>
+                                <p data-translate-key="myLearning.loading">載入中...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Favorites Tab -->
+                    <div id="my-learning-favorites-tab" class="space-y-4 hidden">
+                        <div id="favorites-container" class="space-y-3">
+                            <div class="text-center text-indigo-200 py-8">
+                                <div class="loader mx-auto mb-2"></div>
+                                <p data-translate-key="myLearning.loading">載入中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- (8) Admin Management View -->
             <div id="admin-view" class="view-content hidden">
                 <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 border-2 border-white/20 text-white">
                     <h2 class="text-3xl font-bold text-center mb-2">
@@ -1717,6 +1826,36 @@
                     benefitAITutor: 'AI 助教',
                     benefitTutoring: '作業輔導',
                     benefitStorybook: '繪本朗讀'
+                },
+                myLearning: {
+                    title: '我的學習',
+                    subtitle: '查看您的學習進度、歷史記錄和收藏',
+                    loading: '載入中...',
+                    stats: {
+                        lessons: '課程',
+                        stories: '故事',
+                        tutoring: '作業輔導',
+                        favorites: '收藏'
+                    },
+                    tab: {
+                        lessons: '課程記錄',
+                        stories: '故事記錄',
+                        tutoring: '作業輔導',
+                        favorites: '我的收藏'
+                    },
+                    noLessons: '還沒有課程記錄',
+                    noStories: '還沒有故事記錄',
+                    noTutoring: '還沒有作業輔導記錄',
+                    noFavorites: '還沒有收藏',
+                    viewDetails: '查看詳情',
+                    delete: '刪除',
+                    favorite: '收藏',
+                    unfavorite: '取消收藏',
+                    createdOn: '創建於',
+                    subject: '科目',
+                    topic: '主題',
+                    ageGroup: '年齡組',
+                    lessonType: '類型'
                 }
             },
             'en': {
@@ -1973,6 +2112,36 @@
                     benefitAITutor: 'AI Tutor',
                     benefitTutoring: 'Homework Tutoring',
                     benefitStorybook: 'Storybook Reading'
+                },
+                myLearning: {
+                    title: 'My Learning',
+                    subtitle: 'View your learning progress, history, and favorites',
+                    loading: 'Loading...',
+                    stats: {
+                        lessons: 'Lessons',
+                        stories: 'Stories',
+                        tutoring: 'Tutoring',
+                        favorites: 'Favorites'
+                    },
+                    tab: {
+                        lessons: 'Lesson History',
+                        stories: 'Story History',
+                        tutoring: 'Tutoring Sessions',
+                        favorites: 'My Favorites'
+                    },
+                    noLessons: 'No lesson history yet',
+                    noStories: 'No story history yet',
+                    noTutoring: 'No tutoring sessions yet',
+                    noFavorites: 'No favorites yet',
+                    viewDetails: 'View Details',
+                    delete: 'Delete',
+                    favorite: 'Favorite',
+                    unfavorite: 'Unfavorite',
+                    createdOn: 'Created on',
+                    subject: 'Subject',
+                    topic: 'Topic',
+                    ageGroup: 'Age Group',
+                    lessonType: 'Type'
                 }
             },
             'vi': {
@@ -2229,6 +2398,36 @@
                     benefitAITutor: 'Gia sư AI',
                     benefitTutoring: 'Gia sư bài tập',
                     benefitStorybook: 'Đọc truyện tranh'
+                },
+                myLearning: {
+                    title: 'Học tập của tôi',
+                    subtitle: 'Xem tiến độ học tập, lịch sử và mục yêu thích',
+                    loading: 'Đang tải...',
+                    stats: {
+                        lessons: 'Bài học',
+                        stories: 'Câu chuyện',
+                        tutoring: 'Gia sư',
+                        favorites: 'Yêu thích'
+                    },
+                    tab: {
+                        lessons: 'Lịch sử bài học',
+                        stories: 'Lịch sử câu chuyện',
+                        tutoring: 'Phiên gia sư',
+                        favorites: 'Mục yêu thích'
+                    },
+                    noLessons: 'Chưa có lịch sử bài học',
+                    noStories: 'Chưa có lịch sử câu chuyện',
+                    noTutoring: 'Chưa có phiên gia sư',
+                    noFavorites: 'Chưa có mục yêu thích',
+                    viewDetails: 'Xem chi tiết',
+                    delete: 'Xóa',
+                    favorite: 'Yêu thích',
+                    unfavorite: 'Bỏ yêu thích',
+                    createdOn: 'Tạo vào',
+                    subject: 'Môn học',
+                    topic: 'Chủ đề',
+                    ageGroup: 'Nhóm tuổi',
+                    lessonType: 'Loại'
                 }
             },
             'ja': {
@@ -2485,6 +2684,36 @@
                     benefitAITutor: 'AIチューター',
                     benefitTutoring: '宿題指導',
                     benefitStorybook: '絵本の読み聞かせ'
+                },
+                myLearning: {
+                    title: '私の学習',
+                    subtitle: '学習進捗、履歴、お気に入りを表示',
+                    loading: '読み込み中...',
+                    stats: {
+                        lessons: 'レッスン',
+                        stories: 'ストーリー',
+                        tutoring: '指導',
+                        favorites: 'お気に入り'
+                    },
+                    tab: {
+                        lessons: 'レッスン履歴',
+                        stories: 'ストーリー履歴',
+                        tutoring: '指導セッション',
+                        favorites: 'お気に入り'
+                    },
+                    noLessons: 'レッスン履歴がありません',
+                    noStories: 'ストーリー履歴がありません',
+                    noTutoring: '指導セッションがありません',
+                    noFavorites: 'お気に入りがありません',
+                    viewDetails: '詳細を見る',
+                    delete: '削除',
+                    favorite: 'お気に入り',
+                    unfavorite: 'お気に入り解除',
+                    createdOn: '作成日',
+                    subject: '科目',
+                    topic: 'トピック',
+                    ageGroup: '年齢グループ',
+                    lessonType: 'タイプ'
                 }
             }
         };
@@ -4199,10 +4428,26 @@
             }
         }
 
-        async function callGeminiAPI(prompt, systemPrompt = "", base64Image = null, model = "gemini-2.5-flash-preview-09-2025") {
+        async function callGeminiAPI(prompt, systemPrompt = "", base64Image = null, model = "gemini-2.5-flash-preview-09-2025", usePersonalization = true) {
             // Check authentication
             if (!isAuthenticated) {
                 throw new Error('請先登入以使用此功能');
+            }
+
+            // Get personalized system prompt if enabled
+            let finalSystemPrompt = systemPrompt;
+            if (usePersonalization && isAuthenticated) {
+                try {
+                    const personalizedPrompt = await getPersonalizedPrompt({
+                        prompt_type: 'gemini_api',
+                        original_system_prompt: systemPrompt,
+                    });
+                    if (personalizedPrompt) {
+                        finalSystemPrompt = personalizedPrompt + (systemPrompt ? `\n\n${systemPrompt}` : '');
+                    }
+                } catch (error) {
+                    console.error('Failed to get personalized prompt, using default:', error);
+                }
             }
 
             const authToken = await getAuthToken();
@@ -4224,9 +4469,9 @@
                 contents: [{ role: "user", parts: parts }],
             };
             
-            if(systemPrompt){
+            if(finalSystemPrompt){
                 payload.systemInstruction = {
-                    parts: [{ text: systemPrompt }]
+                    parts: [{ text: finalSystemPrompt }]
                 };
             }
 
@@ -4840,12 +5085,395 @@
             if (viewId === 'admin-view') {
                 loadAdminData();
             }
+            if (viewId === 'my-learning-view') {
+                loadLearningStats();
+                loadLessonsHistory();
+            }
         }
         
         function handleNavClick(e) {
             const btn = e.target.closest('.nav-btn');
             if (btn) {
                 switchView(btn.dataset.view);
+            }
+        }
+
+        // --- AI Personalization Functions ---
+        const AI_PERSONALIZATION_URL = `${SUPABASE_URL}/functions/v1/ai-personalization`;
+        let currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        let userPreferences = null;
+        let personalizedSystemPrompt = null;
+        
+        // Log user behavior
+        async function logUserBehavior(actionType, actionDetails = {}) {
+            if (!isAuthenticated) return;
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+                
+                await fetch(AI_PERSONALIZATION_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                        action: 'log_behavior',
+                        behavior: {
+                            action_type: actionType,
+                            action_details: actionDetails,
+                            session_id: currentSessionId,
+                        }
+                    }),
+                });
+            } catch (error) {
+                console.error('Failed to log behavior:', error);
+            }
+        }
+        
+        // Get personalized prompt for AI
+        async function getPersonalizedPrompt(context = {}) {
+            if (!isAuthenticated) return null;
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return null;
+                
+                const response = await fetch(AI_PERSONALIZATION_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                        action: 'get_personalized_prompt',
+                        prompt_context: context,
+                    }),
+                });
+                
+                const result = await response.json();
+                if (result.personalized_system_prompt) {
+                    personalizedSystemPrompt = result.personalized_system_prompt;
+                    userPreferences = result.personalized_context.user_preferences;
+                    return result.personalized_system_prompt;
+                }
+                return null;
+            } catch (error) {
+                console.error('Failed to get personalized prompt:', error);
+                return null;
+            }
+        }
+        
+        // Save user feedback
+        async function saveUserFeedback(responseType, responseId, rating, feedbackText = null, wasHelpful = null) {
+            if (!isAuthenticated) return;
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+                
+                await fetch(AI_PERSONALIZATION_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                        action: 'save_feedback',
+                        feedback: {
+                            response_type: responseType,
+                            response_id: responseId,
+                            rating: rating,
+                            feedback_text: feedbackText,
+                            was_helpful: wasHelpful,
+                        }
+                    }),
+                });
+            } catch (error) {
+                console.error('Failed to save feedback:', error);
+            }
+        }
+        
+        // Analyze learning style (call periodically)
+        async function analyzeUserLearningStyle() {
+            if (!isAuthenticated) return;
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+                
+                const response = await fetch(AI_PERSONALIZATION_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                        action: 'analyze_learning_style',
+                    }),
+                });
+                
+                const result = await response.json();
+                console.log('Learning style analysis:', result);
+            } catch (error) {
+                console.error('Failed to analyze learning style:', error);
+            }
+        }
+        
+        // Enhanced callGeminiAPI with personalization
+        async function callGeminiAPIWithPersonalization(userPrompt, baseSystemPrompt = '', imageBase64 = null, context = {}) {
+            // Get personalized system prompt
+            const personalizedPrompt = await getPersonalizedPrompt(context);
+            
+            // Combine base system prompt with personalized prompt
+            const finalSystemPrompt = personalizedPrompt 
+                ? `${baseSystemPrompt}\n\n${personalizedPrompt}`
+                : baseSystemPrompt;
+            
+            // Call original Gemini API
+            return await callGeminiAPI(userPrompt, finalSystemPrompt, imageBase64);
+        }
+
+        // --- Learning Progress Functions ---
+        const LEARNING_PROGRESS_URL = `${SUPABASE_URL}/functions/v1/learning-progress`;
+        
+        async function callLearningProgress(action, payload = {}) {
+            if (!supabase || !isAuthenticated) {
+                throw new Error('請先登入');
+            }
+            
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                throw new Error('未找到登入會話');
+            }
+            
+            const response = await fetch(LEARNING_PROGRESS_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ action, ...payload }),
+            });
+            
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || '操作失敗');
+            }
+            
+            return result;
+        }
+        
+        // Save lesson to learning history
+        async function saveLessonToHistory(lessonData) {
+            try {
+                await callLearningProgress('save_lesson', { lesson: lessonData });
+                // Refresh stats if on my-learning view
+                if (document.getElementById('my-learning-view') && !document.getElementById('my-learning-view').classList.contains('hidden')) {
+                    loadLearningStats();
+                }
+            } catch (error) {
+                console.error('Failed to save lesson:', error);
+            }
+        }
+        
+        // Save story to learning history
+        async function saveStoryToHistory(storyData) {
+            try {
+                await callLearningProgress('save_story', { story: storyData });
+                if (document.getElementById('my-learning-view') && !document.getElementById('my-learning-view').classList.contains('hidden')) {
+                    loadLearningStats();
+                }
+            } catch (error) {
+                console.error('Failed to save story:', error);
+            }
+        }
+        
+        // Save tutoring session to learning history
+        async function saveTutoringToHistory(tutoringData) {
+            try {
+                await callLearningProgress('save_tutoring', { tutoring: tutoringData });
+                if (document.getElementById('my-learning-view') && !document.getElementById('my-learning-view').classList.contains('hidden')) {
+                    loadLearningStats();
+                }
+            } catch (error) {
+                console.error('Failed to save tutoring session:', error);
+            }
+        }
+        
+        // Load learning statistics
+        async function loadLearningStats() {
+            try {
+                const result = await callLearningProgress('get_stats');
+                if (result.data) {
+                    document.getElementById('stat-lessons').textContent = result.data.total_lessons || 0;
+                    document.getElementById('stat-stories').textContent = result.data.total_stories || 0;
+                    document.getElementById('stat-tutoring').textContent = result.data.total_tutoring_sessions || 0;
+                    document.getElementById('stat-favorites').textContent = result.data.total_favorites || 0;
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+        
+        // Load lessons history
+        async function loadLessonsHistory() {
+            try {
+                const result = await callLearningProgress('get_lessons', { limit: 50, offset: 0 });
+                const container = document.getElementById('lessons-container');
+                if (!result.data || result.data.length === 0) {
+                    container.innerHTML = `<div class="text-center text-indigo-200 py-8">
+                        <i class="fas fa-book text-4xl mb-4 opacity-50"></i>
+                        <p data-translate-key="myLearning.noLessons">還沒有課程記錄</p>
+                    </div>`;
+                    return;
+                }
+                
+                container.innerHTML = result.data.map(lesson => {
+                    const content = lesson.content || {};
+                    const date = new Date(lesson.created_at).toLocaleDateString(currentLang === 'zh-Hant' ? 'zh-TW' : currentLang);
+                    return `
+                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-lg text-yellow-300 mb-1">${lesson.topic}</h3>
+                                    <div class="flex flex-wrap gap-2 text-sm text-indigo-200">
+                                        <span><i class="fas fa-book mr-1"></i>${lesson.lesson_type}</span>
+                                        <span><i class="fas fa-graduation-cap mr-1"></i>${lesson.subject}</span>
+                                        <span><i class="fas fa-users mr-1"></i>${lesson.age_group}</span>
+                                    </div>
+                                </div>
+                                <button class="favorite-btn text-yellow-300 hover:text-yellow-200" data-item-type="lesson" data-item-id="${lesson.id}">
+                                    <i class="far fa-star"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-white/70 mb-2 line-clamp-2">${content.explanation?.[currentLang] || content.explanation?.['zh-Hant'] || ''}</p>
+                            <div class="flex justify-between items-center text-xs text-indigo-200">
+                                <span><i class="far fa-calendar mr-1"></i>${date}</span>
+                                <button class="view-details-btn text-yellow-300 hover:text-yellow-200" data-lesson-id="${lesson.id}">
+                                    <i class="fas fa-eye mr-1"></i><span data-translate-key="myLearning.viewDetails">查看詳情</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Failed to load lessons:', error);
+                document.getElementById('lessons-container').innerHTML = `<div class="text-center text-red-300 py-8">載入失敗</div>`;
+            }
+        }
+        
+        // Load stories history
+        async function loadStoriesHistory() {
+            try {
+                const result = await callLearningProgress('get_stories', { limit: 50, offset: 0 });
+                const container = document.getElementById('stories-container');
+                if (!result.data || result.data.length === 0) {
+                    container.innerHTML = `<div class="text-center text-indigo-200 py-8">
+                        <i class="fas fa-book-reader text-4xl mb-4 opacity-50"></i>
+                        <p data-translate-key="myLearning.noStories">還沒有故事記錄</p>
+                    </div>`;
+                    return;
+                }
+                
+                container.innerHTML = result.data.map(story => {
+                    const date = new Date(story.created_at).toLocaleDateString(currentLang === 'zh-Hant' ? 'zh-TW' : currentLang);
+                    const preview = story.story_text.substring(0, 150) + (story.story_text.length > 150 ? '...' : '');
+                    return `
+                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-lg text-yellow-300 mb-1">${story.character_name || '故事'}</h3>
+                                    <div class="flex flex-wrap gap-2 text-sm text-indigo-200">
+                                        <span><i class="fas fa-language mr-1"></i>${story.language}</span>
+                                        <span><i class="fas fa-users mr-1"></i>${story.age_group}</span>
+                                        <span><i class="fas fa-palette mr-1"></i>${story.style}</span>
+                                    </div>
+                                </div>
+                                <button class="favorite-btn text-yellow-300 hover:text-yellow-200" data-item-type="story" data-item-id="${story.id}">
+                                    <i class="far fa-star"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-white/70 mb-2 line-clamp-3">${preview}</p>
+                            <div class="flex justify-between items-center text-xs text-indigo-200">
+                                <span><i class="far fa-calendar mr-1"></i>${date}</span>
+                                <button class="view-story-btn text-yellow-300 hover:text-yellow-200" data-story-id="${story.id}">
+                                    <i class="fas fa-eye mr-1"></i><span data-translate-key="myLearning.viewDetails">查看詳情</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Failed to load stories:', error);
+                document.getElementById('stories-container').innerHTML = `<div class="text-center text-red-300 py-8">載入失敗</div>`;
+            }
+        }
+        
+        // Load tutoring sessions history
+        async function loadTutoringHistory() {
+            try {
+                const result = await callLearningProgress('get_tutoring_sessions', { limit: 50, offset: 0 });
+                const container = document.getElementById('tutoring-container');
+                if (!result.data || result.data.length === 0) {
+                    container.innerHTML = `<div class="text-center text-indigo-200 py-8">
+                        <i class="fas fa-graduation-cap text-4xl mb-4 opacity-50"></i>
+                        <p data-translate-key="myLearning.noTutoring">還沒有作業輔導記錄</p>
+                    </div>`;
+                    return;
+                }
+                
+                container.innerHTML = result.data.map(session => {
+                    const date = new Date(session.created_at).toLocaleDateString(currentLang === 'zh-Hant' ? 'zh-TW' : currentLang);
+                    const analysis = session.analysis_content || {};
+                    return `
+                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-lg text-yellow-300 mb-1">${session.subject}</h3>
+                                    <div class="flex flex-wrap gap-2 text-sm text-indigo-200">
+                                        <span><i class="fas fa-layer-group mr-1"></i>${session.level}</span>
+                                        <span><i class="fas fa-language mr-1"></i>${session.language}</span>
+                                    </div>
+                                </div>
+                                <button class="favorite-btn text-yellow-300 hover:text-yellow-200" data-item-type="tutoring" data-item-id="${session.id}">
+                                    <i class="far fa-star"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-white/70 mb-2 line-clamp-2">${analysis.summary || ''}</p>
+                            <div class="flex justify-between items-center text-xs text-indigo-200">
+                                <span><i class="far fa-calendar mr-1"></i>${date}</span>
+                                <button class="view-tutoring-btn text-yellow-300 hover:text-yellow-200" data-tutoring-id="${session.id}">
+                                    <i class="fas fa-eye mr-1"></i><span data-translate-key="myLearning.viewDetails">查看詳情</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Failed to load tutoring sessions:', error);
+                document.getElementById('tutoring-container').innerHTML = `<div class="text-center text-red-300 py-8">載入失敗</div>`;
+            }
+        }
+        
+        // Load favorites
+        async function loadFavorites() {
+            try {
+                const result = await callLearningProgress('get_favorites', { limit: 50, offset: 0 });
+                const container = document.getElementById('favorites-container');
+                if (!result.data || result.data.length === 0) {
+                    container.innerHTML = `<div class="text-center text-indigo-200 py-8">
+                        <i class="fas fa-star text-4xl mb-4 opacity-50"></i>
+                        <p data-translate-key="myLearning.noFavorites">還沒有收藏</p>
+                    </div>`;
+                    return;
+                }
+                
+                container.innerHTML = '<p class="text-indigo-200 mb-4">收藏功能開發中...</p>';
+            } catch (error) {
+                console.error('Failed to load favorites:', error);
+                document.getElementById('favorites-container').innerHTML = `<div class="text-center text-red-300 py-8">載入失敗</div>`;
             }
         }
 
@@ -5092,6 +5720,17 @@ Output ONLY a single, valid JSON object in the following format. Omit "vocabular
                 currentLesson.selectedTopicName = topic;
                 renderLesson();
                 lessonContainer.classList.remove('hidden');
+                
+                // Save lesson to history
+                if (isAuthenticated) {
+                    saveLessonToHistory({
+                        lesson_type: lessonType,
+                        subject: subject,
+                        topic: topic,
+                        age_group: age,
+                        content: currentLesson
+                    });
+                }
 
             } catch (error) {
                 console.error("Lesson Generation Error:", error);
@@ -5164,6 +5803,14 @@ Output ONLY a single, valid JSON object in the following format. Omit "vocabular
                      subject = tutoringCustomSubjectInput.value || 'Custom';
                  }
                  const language = tutoringLanguageSelect.options[tutoringLanguageSelect.selectedIndex].text;
+                 
+                 // Log user behavior
+                 await logUserBehavior('tutoring_used', {
+                     level: level,
+                     subject: subject,
+                     language: language,
+                     file_count: fileCount,
+                 });
 
                  const systemPrompt = `You are an AI tutor analyzing homework. Output a valid JSON object. All property names must be double-quoted. Output ONLY the JSON object.`;
                  const prompt = `Analyze this homework image${fileCount > 1 ? ` (1st of ${fileCount} uploaded files)` : ''}. The student's level is ${level}, the subject is ${subject}. Provide all text in ${language}.
@@ -5251,9 +5898,20 @@ Return ONLY a valid JSON object with the following shape:
 
                 renderTutoringVocabulary(vocabularyItems);
                 tutoringResultsView.classList.remove('hidden');
+                
+                // Save tutoring session to history
+                if (isAuthenticated) {
+                    saveTutoringToHistory({
+                        level: level,
+                        subject: subject,
+                        language: language,
+                        analysis_content: results,
+                        file_urls: tutoringFiles.map(f => f.name)
+                    });
+                }
 
-             } catch (error) {
-                 console.error("Homework Analysis Error:", error);
+            } catch (error) {
+                console.error("Homework Analysis Error:", error);
                  displayError(tutoringErrorMessage, `Analysis failed: ${error.message}`);
              } finally {
                  setLoading(analyzeHomeworkBtn, false);
@@ -5292,6 +5950,19 @@ Return ONLY a valid JSON object with the following shape:
                 storyAudioUrl = URL.createObjectURL(audioBlob);
                 audioControls.classList.remove('hidden');
                 playStoryBtn.disabled = false;
+                
+                // Save story to history
+                if (isAuthenticated) {
+                    saveStoryToHistory({
+                        story_text: storyText,
+                        language: lang,
+                        age_group: age,
+                        style: style,
+                        character_name: charName || null,
+                        image_urls: Array.from(storybookFiles).map(f => f.name),
+                        audio_url: storyAudioUrl
+                    });
+                }
 
             } catch (error) {
                 console.error("Story Generation Error:", error);
@@ -5441,8 +6112,17 @@ Return ONLY a valid JSON object with the following shape:
 
         // --- Translation & UI Update Functions ---
         function setLanguage(lang) {
+            const previousLang = currentLang;
             currentLang = lang;
             document.documentElement.lang = lang;
+            
+            // Log language change behavior
+            if (previousLang && previousLang !== lang && isAuthenticated) {
+                logUserBehavior('language_changed', {
+                    from_language: previousLang,
+                    to_language: lang,
+                });
+            }
             
             document.querySelectorAll('[data-translate-key]').forEach(el => {
                 const key = el.dataset.translateKey;
@@ -6872,10 +7552,64 @@ document.addEventListener('click', (event) => {
             }
         }
 
+        // --- My Learning Tab Switching ---
+        function switchMyLearningTab(tabName) {
+            // Hide all tabs
+            document.getElementById('my-learning-lessons-tab').classList.add('hidden');
+            document.getElementById('my-learning-stories-tab').classList.add('hidden');
+            document.getElementById('my-learning-tutoring-tab').classList.add('hidden');
+            document.getElementById('my-learning-favorites-tab').classList.add('hidden');
+            
+            // Remove active state from all tab buttons
+            document.querySelectorAll('[id^="my-learning-tab-"]').forEach(btn => {
+                btn.classList.remove('border-yellow-400', 'text-yellow-400');
+                btn.classList.add('border-transparent');
+            });
+            
+            // Show selected tab
+            const tabMap = {
+                'lessons': 'my-learning-lessons-tab',
+                'stories': 'my-learning-stories-tab',
+                'tutoring': 'my-learning-tutoring-tab',
+                'favorites': 'my-learning-favorites-tab'
+            };
+            
+            const tabButtonMap = {
+                'lessons': 'my-learning-tab-lessons',
+                'stories': 'my-learning-tab-stories',
+                'tutoring': 'my-learning-tab-tutoring',
+                'favorites': 'my-learning-tab-favorites'
+            };
+            
+            document.getElementById(tabMap[tabName])?.classList.remove('hidden');
+            const activeBtn = document.getElementById(tabButtonMap[tabName]);
+            if (activeBtn) {
+                activeBtn.classList.add('border-yellow-400', 'text-yellow-400');
+                activeBtn.classList.remove('border-transparent');
+            }
+            
+            // Load data for the selected tab
+            if (tabName === 'lessons') {
+                loadLessonsHistory();
+            } else if (tabName === 'stories') {
+                loadStoriesHistory();
+            } else if (tabName === 'tutoring') {
+                loadTutoringHistory();
+            } else if (tabName === 'favorites') {
+                loadFavorites();
+            }
+        }
+        
         // --- Initialization ---
         function init() {
             mainNav.addEventListener('click', handleNavClick);
             languageSwitcher.addEventListener('change', (e) => setLanguage(e.target.value));
+            
+            // My Learning tab switching
+            document.getElementById('my-learning-tab-lessons')?.addEventListener('click', () => switchMyLearningTab('lessons'));
+            document.getElementById('my-learning-tab-stories')?.addEventListener('click', () => switchMyLearningTab('stories'));
+            document.getElementById('my-learning-tab-tutoring')?.addEventListener('click', () => switchMyLearningTab('tutoring'));
+            document.getElementById('my-learning-tab-favorites')?.addEventListener('click', () => switchMyLearningTab('favorites'));
             
             // Admin tab switching
             const adminTabPending = document.getElementById('admin-tab-pending');
