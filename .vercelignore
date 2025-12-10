@@ -1,0 +1,21 @@
+# Supabase functions (deployed separately)
+supabase/
+
+# Documentation
+*.md
+DEPLOY_GUIDE.md
+SUPABASE_SETUP.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+

@@ -1,924 +1,5 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多功能學習平台</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
-    <!-- Supabase Client Library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-        }
-        .app-bg {
-            background: linear-gradient(135deg, #4f46e5, #a855f7, #ec4899);
-            min-height: 100vh;
-            overflow-x: hidden; /* Allow vertical scroll, prevent horizontal */
-            position: relative;
-        }
-        .app-bg::before {
-            content: '';
-            position: absolute;
-            top: -10%; right: -10%;
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-            animation: pulse-light 8s infinite;
-        }
-        .app-bg::after {
-            content: '';
-            position: absolute;
-            bottom: -15%; left: -10%;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 65%);
-            animation: pulse-light 10s infinite reverse;
-        }
-        @keyframes pulse-light {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.2); opacity: 1; }
-        }
-        .view-content { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
-        .view-content.hidden { opacity: 0; transform: translateY(10px); display: none; }
-        .nav-btn.active { background-color: #fff; color: #4f46e5; box-shadow: 0 4px 14px 0 rgb(0 0 0 / 10%); }
-        .radio-btn-group input[type="radio"] { display: none; }
-        .radio-btn-group label {
-            cursor: pointer; background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); transition: all 0.2s;
-        }
-        .radio-btn-group input[type="radio"]:checked + label {
-            background-color: #fbbf24; color: #854d0e; font-weight: bold; border-color: #fbbf24;
-        }
-        .loader {
-            width: 20px; height: 20px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite;
-        }
-        .audio-loader {
-             width: 16px; height: 16px; border: 2px solid #fff; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite;
-        }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .app-file-drop-zone { border: 2px dashed rgba(255,255,255,0.4); transition: all 0.2s ease-in-out; overflow: visible; }
-        .app-file-drop-zone.dragover { background-color: rgba(255,255,255,0.1); border-color: #fbbf24; }
-        .language-select { position: relative; z-index: 50; }
-        .expert-card { cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
-        .expert-card.selected { border-color: #fbbf24; background-color: rgba(255,255,255,0.3); }
-        .chat-bubble { max-width: 85%; }
-        .chat-bubble.user { background-color: #4f46e5; color: white; border-radius: 1.2rem 1.2rem 0.2rem 1.2rem; }
-        .chat-bubble.bot { background-color: #e2e8f0; color: #1e293b; border-radius: 1.2rem 1.2rem 1.2rem 0.2rem; }
-        .chat-bubble.bot.summary { background-color: #dbeafe; border: 1px solid #93c5fd; }
-        [contenteditable]:empty:before{
-            content: attr(data-placeholder-key);
-            color: #9ca3af;
-            font-style: italic;
-        }
-        #story-display-container span {
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-         #story-display-container span.highlight {
-            background-color: rgba(251, 191, 36, 0.5);
-        }
-        .play-audio-btn {
-            background-color: #ec4899; color: white; border-radius: 50%; width: 32px; height: 32px;
-            display: flex; align-items: center; justify-content: center; transition: background-color 0.2s;
-        }
-        .play-audio-btn:hover { background-color: #db2777; }
-        .play-audio-btn.loading .fa-play { display: none; }
-        .play-audio-btn:not(.loading) .audio-loader { display: none; }
-        .lesson-lang-btn {
-            background-color: rgba(255, 255, 255, 0.2); color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.2s;
-        }
-        .lesson-lang-btn.active {
-            background-color: #fbbf24; color: #854d0e; font-weight: bold; border-color: #fbbf24;
-        }
-        .prose strong { color: inherit; }
-        .badge-chip {
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            border-radius: 9999px;
-            padding: 0.1rem 0.75rem;
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            background: rgba(255,255,255,0.08);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        .badge-chip.timer { border-color: rgba(248,250,252,0.5); }
-        .badge-chip.record { border-color: rgba(248,113,113,0.5); background: rgba(248,113,113,0.15); }
-        .waveform-bar {
-            height: 28px;
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-        }
-        .waveform-bar span {
-            width: 4px;
-            background: linear-gradient(180deg, #f472b6, #fb7185);
-            border-radius: 999px;
-            animation: waveform-bounce 0.9s ease-in-out infinite;
-        }
-        .waveform-bar span:nth-child(2) { animation-delay: 0.1s; }
-        .waveform-bar span:nth-child(3) { animation-delay: 0.2s; }
-        .waveform-bar span:nth-child(4) { animation-delay: 0.3s; }
-        @keyframes waveform-bounce {
-            0%, 100% { height: 6px; opacity: 0.7; }
-            50% { height: 24px; opacity: 1; }
-        }
-        .progress-steps {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        .progress-step {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            border: 1px dashed rgba(255,255,255,0.3);
-            color: rgba(255,255,255,0.7);
-        }
-        .progress-step.active {
-            border-style: solid;
-            background: rgba(16,185,129,0.15);
-            color: #6ee7b7;
-        }
-        .result-panel-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1rem;
-        }
-        .result-panel {
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(15,23,42,0.4);
-            padding: 1rem;
-        }
-        .result-panel h5 {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        .timer-flash {
-            animation: timerBlink 1s linear infinite;
-        }
-        @keyframes timerBlink {
-            0%, 100% { color: #fbbf24; }
-            50% { color: #fef08a; }
-        }
-        .audio-button-row {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-        .download-audio-btn {
-            background-color: rgba(255, 255, 255, 0.18);
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 9999px;
-            border: 1px solid rgba(255,255,255,0.25);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 0.4rem;
-            transition: background-color 0.2s ease;
-        }
-        .download-audio-btn:hover {
-            background-color: rgba(255,255,255,0.35);
-        }
-        .download-audio-btn.hidden {
-            display: none;
-        }
 
-    </style>
-</head>
-<body class="app-bg">
-    <!-- Login Modal -->
-    <div id="login-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">歡迎使用</h2>
-                <p class="text-gray-600">請登入以繼續使用服務</p>
-            </div>
-            
-            <div id="login-error" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md text-sm"></div>
-            
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label for="login-email" class="block text-sm font-medium text-gray-700 mb-2">電子郵件</label>
-                    <input type="email" id="login-email" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                           placeholder="your@email.com">
-                </div>
-                <div>
-                    <label for="login-password" class="block text-sm font-medium text-gray-700 mb-2">密碼</label>
-                    <input type="password" id="login-password" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                           placeholder="••••••••">
-                </div>
-                <button type="submit" 
-                        class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all transform hover:scale-105">
-                    登入
-                </button>
-            </form>
-            
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600">
-                    還沒有帳號？ 
-                    <a href="#" id="show-signup" class="text-indigo-600 hover:text-indigo-800 font-medium">立即註冊</a>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Signup Modal -->
-    <div id="signup-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">建立帳號</h2>
-                <p class="text-gray-600">註冊以開始使用服務</p>
-            </div>
-            
-            <div id="signup-error" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md text-sm"></div>
-            <div id="signup-success" class="hidden mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md text-sm"></div>
-            
-            <form id="signup-form" class="space-y-4">
-                <div>
-                    <label for="signup-email" class="block text-sm font-medium text-gray-700 mb-2">電子郵件</label>
-                    <input type="email" id="signup-email" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                           placeholder="your@email.com">
-                </div>
-                <div>
-                    <label for="signup-password" class="block text-sm font-medium text-gray-700 mb-2">密碼</label>
-                    <input type="password" id="signup-password" required minlength="6"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                           placeholder="至少6個字元">
-                </div>
-                <button type="submit"
-                        class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all transform hover:scale-105">
-                    註冊
-                </button>
-            </form>
-            
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600">
-                    已有帳號？ 
-                    <a href="#" id="show-login" class="text-indigo-600 hover:text-indigo-800 font-medium">返回登入</a>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main App (hidden until authenticated) -->
-    <div id="main-app" class="hidden">
-    <div class="container mx-auto p-4 md:p-8 max-w-5xl relative z-10">
-        <!-- Language Switcher and Logout Button -->
-        <div class="absolute top-4 right-4 md:top-6 md:right-8 z-20 overflow-visible flex items-center gap-2">
-            <button id="logout-btn" class="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-all hidden" title="登出">
-                <i class="fas fa-sign-out-alt mr-1"></i>登出
-            </button>
-            <select id="language-switcher" class="language-select bg-white/20 text-white rounded-md p-2 border-2 border-white/30 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                <option value="zh-Hant">繁體中文</option>
-                <option value="en">English</option>
-                <option value="vi">Tiếng Việt</option>
-                <option value="ja">日本語</option>
-            </select>
-        </div>
-
-        <!-- New Main Header -->
-        <header class="text-center mb-6">
-            <h1 class="text-5xl md:text-6xl font-bold text-white tracking-tight" data-translate-key="main_title">LingoVerse AI</h1>
-            <p class="text-lg text-indigo-200 mt-2" data-translate-key="main_subtitle">您的 AI 學習宇宙</p>
-        </header>
-
-        <!-- New Main Navigation -->
-        <nav id="main-nav" class="mb-8 flex flex-wrap justify-center p-2 bg-black/10 backdrop-blur-sm rounded-xl border border-white/20">
-            <button data-view="platform-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center active" data-translate-key="nav.learningPlatform">多語言學習平台</button>
-            <button data-view="tutoring-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.studentTutoring">學生課程輔導</button>
-            <button data-view="storybook-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.storybookReading">兒童繪本朗讀</button>
-            <button data-view="ai-tutor-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.aiTutor">AI 助教</button>
-            <button data-view="ai-doctor-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.aiDoctor">AI 小醫生</button>
-            <button data-view="debate-coach-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.debateCoach">AI 辯論教練</button>
-        </nav>
-        
-        <!-- View Container -->
-        <main>
-            <!-- (1) Multilingual Learning Platform View -->
-            <div id="platform-view" class="view-content">
-                <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 border-2 border-white/20 text-white">
-                    <h2 class="text-3xl font-bold text-center mb-2" data-translate-key="pageTitle">多語言學習平台</h2>
-                    <p class="text-center text-indigo-200 mb-8" data-translate-key="pageSubtitle">開始今天的學習冒險吧！</p>
-                    
-                    <div id="error-message" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert"></div>
-
-                    <!-- Step 1: Age Selection -->
-                    <div class="mb-8">
-                        <h3 class="font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="ageTitle">1. 選擇年齡</h3>
-                        <div id="age-group" class="radio-btn-group grid grid-cols-2 md:grid-cols-5 gap-3">
-                            <input type="radio" id="age-under-5" name="age" value="Under 5" checked><label for="age-under-5" class="block text-center rounded-lg p-3" data-translate-key="age_under_5">5歲以下</label>
-                            <input type="radio" id="age-6-10" name="age" value="6-10 years"><label for="age-6-10" class="block text-center rounded-lg p-3" data-translate-key="age_6_10">6-10歲</label>
-                            <input type="radio" id="age-10-15" name="age" value="10-15 years"><label for="age-10-15" class="block text-center rounded-lg p-3" data-translate-key="age_10_15">10-15歲</label>
-                            <input type="radio" id="age-15-20" name="age" value="15-20 years"><label for="age-15-20" class="block text-center rounded-lg p-3" data-translate-key="age_15_20">15-20歲</label>
-                            <input type="radio" id="age-over-20" name="age" value="Over 20"><label for="age-over-20" class="block text-center rounded-lg p-3" data-translate-key="age_over_20">20歲以上</label>
-                        </div>
-                    </div>
-                     <!-- Step 2: Subject Selection -->
-                    <div class="mb-8">
-                        <h3 class="font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="subjectTitle">2. 選擇課程類型</h3>
-                        <div id="subject-group" class="radio-btn-group grid grid-cols-2 md:grid-cols-3 gap-3">
-                            <input type="radio" id="subject-kids-en" name="subject" value="KidsEnglish" checked><label for="subject-kids-en" class="block text-center rounded-lg p-3" data-translate-key="subjectKidsEn">兒童英文</label>
-                            <input type="radio" id="subject-adult-en" name="subject" value="AdultEnglish"><label for="subject-adult-en" class="block text-center rounded-lg p-3" data-translate-key="subjectAdultEn">成人英文</label>
-                            <input type="radio" id="subject-sci" name="subject" value="Science"><label for="subject-sci" class="block text-center rounded-lg p-3" data-translate-key="subjectSci">科學</label>
-                            <input type="radio" id="subject-math" name="subject" value="Math"><label for="subject-math" class="block text-center rounded-lg p-3" data-translate-key="subjectMath">數學</label>
-                            <input type="radio" id="subject-hist" name="subject" value="History"><label for="subject-hist" class="block text-center rounded-lg p-3" data-translate-key="subjectHist">歷史</label>
-                            <input type="radio" id="subject-geo" name="subject" value="Geography"><label for="subject-geo" class="block text-center rounded-lg p-3" data-translate-key="subjectGeo">地理</label>
-                        </div>
-                    </div>
-                     <!-- Step 3: Lesson Type Selection -->
-                    <div class="mb-8">
-                        <h3 class="font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="lessonTypeTitle">3. 選擇類型</h3>
-                        <div id="lesson-type-group" class="radio-btn-group grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            <input type="radio" id="type-course" name="lesson-type" value="教學課程" checked><label for="type-course" class="block text-center rounded-lg p-3" data-translate-key="lessonType.course">教學課程</label>
-                            <input type="radio" id="type-story" name="lesson-type" value="啟發故事"><label for="type-story" class="block text-center rounded-lg p-3" data-translate-key="lessonType.story">啟發故事</label>
-                            <input type="radio" id="type-vocab" name="lesson-type" value="5個字彙與例句"><label for="type-vocab" class="block text-center rounded-lg p-3" data-translate-key="lessonType.vocab">5個字彙與例句</label>
-                            <input type="radio" id="type-qa" name="lesson-type" value="AI提問"><label for="type-qa" class="block text-center rounded-lg p-3" data-translate-key="lessonType.qa">AI提問</label>
-                            <input type="radio" id="type-dialogue" name="lesson-type" value="雙人博客"><label for="type-dialogue" class="block text-center rounded-lg p-3" data-translate-key="lessonType.dialogue">雙人博客</label>
-                        </div>
-                    </div>
-                    <!-- Step 4: Topic Selection -->
-                    <div class="mb-8">
-                        <h3 class="font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="topicTitle">4. 選擇主題</h3>
-                        <select id="topic-select" class="w-full p-3 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"></select>
-                        <div id="custom-topic-wrapper" class="hidden mt-4 space-y-2">
-                            <label for="custom-topic-input" class="block text-sm font-medium text-white" data-translate-key="topicCustomLabel">自訂主題</label>
-                            <input id="custom-topic-input" type="text" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white placeholder-gray-300" data-translate-key="topicCustomPlaceholder" placeholder="請輸入想學習的主題">
-                        </div>
-                    </div>
-                    <!-- Generate Button -->
-                    <div class="text-center">
-                         <button id="generate-lesson-btn" class="w-full md:w-1/2 bg-gradient-to-r from-emerald-400 to-cyan-500 text-white font-bold py-3 px-6 rounded-lg hover:from-emerald-500 hover:to-cyan-600 focus:outline-none focus:ring-4 focus:ring-cyan-300 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center mx-auto">
-                           <span class="btn-text" data-translate-key="generateBtn">生成學習計畫</span>
-                           <div class="loader ml-2 hidden"></div>
-                        </button>
-                    </div>
-                </div>
-                <!-- Lesson Display Area -->
-                <div id="lesson-container" class="mt-8 hidden"></div>
-            </div>
-
-            <!-- (2) Student Tutoring View -->
-            <div id="tutoring-view" class="view-content hidden">
-                <!-- Initial State -->
-                <div id="tutoring-initial-view">
-                    <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-8 border-2 border-white/20 text-white text-center">
-                        <h2 class="text-3xl font-bold mb-4" data-translate-key="tutoring.title">學生課程輔導</h2>
-                        <p class="text-indigo-200 mb-8 max-w-2xl mx-auto" data-translate-key="tutoring.subtitle">拍照上傳作業，AI助教立即為您分析與指導！從此告別檢查作業的煩惱，讓AI提供專業的解題步驟、概念說明與個人化練習。</p>
-                        <button id="start-upload-btn" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-8 rounded-lg hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-4 focus:ring-pink-300 transition-all transform hover:scale-105 shadow-lg text-lg" data-translate-key="tutoring.startUploadBtn">
-                            立即上傳作業
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Upload State -->
-                <div id="tutoring-upload-view" class="hidden">
-                     <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 border-2 border-white/20 text-white">
-                        <h2 class="text-3xl font-bold text-center mb-6" data-translate-key="tutoring.uploadTitle">上傳作業</h2>
-                        
-                        <div id="tutoring-error-message" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert"></div>
-
-                        <!-- File Upload Zone -->
-                        <div id="file-drop-zone" class="app-file-drop-zone rounded-lg p-8 text-center cursor-pointer mb-6">
-                            <input type="file" id="homework-file-input" class="hidden" accept="image/*,.pdf" multiple>
-                            <div class="flex flex-col items-center justify-center">
-                                <svg class="w-16 h-16 text-white/50 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-                                </svg>
-                                <p class="font-semibold" data-translate-key="tutoring.dragDropText">點擊或拖曳檔案至此</p>
-                                <p id="file-name-display" class="text-sm text-indigo-200 mt-1" data-translate-key="tutoring.noFileSelected">尚未選擇檔案</p>
-                            </div>
-                        </div>
-                        <p id="tutoring-file-summary" class="text-sm text-indigo-200 mb-6 hidden"></p>
-
-                        <!-- Options -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <div>
-                                <label for="tutoring-level" class="block text-sm font-medium mb-1" data-translate-key="tutoring.levelLabel">程度</label>
-                                <select id="tutoring-level" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white">
-                                </select>
-                            </div>
-                             <div>
-                                <label for="tutoring-subject" class="block text-sm font-medium mb-1" data-translate-key="tutoring.subjectLabel">科目</label>
-                                <select id="tutoring-subject" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white">
-                                </select>
-                            </div>
-                             <div>
-                                <label for="tutoring-language" class="block text-sm font-medium mb-1" data-translate-key="tutoring.languageLabel">語言</label>
-                                <select id="tutoring-language" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white">
-                                </select>
-                            </div>
-                        </div>
-
-                        <div id="tutoring-custom-subject-wrapper" class="hidden mb-8">
-                             <label for="tutoring-custom-subject-input" class="block text-sm font-medium mb-1" data-translate-key="tutoring.customSubjectLabel">自定義科目</label>
-                             <input type="text" id="tutoring-custom-subject-input" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white placeholder-gray-300" placeholder="請輸入科目名稱" data-translate-key="tutoring.customSubjectPlaceholder">
-                        </div>
-
-                        <div class="text-center">
-                            <button id="analyze-homework-btn" class="w-full md:w-1/2 bg-gradient-to-r from-emerald-400 to-cyan-500 text-white font-bold py-3 px-6 rounded-lg hover:from-emerald-500 hover:to-cyan-600 focus:outline-none focus:ring-4 focus:ring-cyan-300 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center mx-auto disabled:opacity-50" disabled>
-                                <span class="btn-text" data-translate-key="tutoring.analyzeBtn">開始分析</span>
-                                <div class="loader ml-2 hidden"></div>
-                            </button>
-                        </div>
-                     </div>
-                </div>
-
-                <!-- Results State -->
-                <div id="tutoring-results-view" class="hidden space-y-8">
-                    <!-- Key Concepts -->
-                     <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 border-2 border-white/20 text-white">
-                        <h2 class="text-2xl font-bold mb-4" data-translate-key="tutoring.conceptsTitle">重點導學</h2>
-                        <div id="key-concepts-container" class="space-y-4">
-                        </div>
-                    </div>
-                    <!-- Vocabulary Highlights -->
-                    <div id="tutoring-vocab-card" class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 border-2 border-white/20 text-white hidden">
-                        <h2 class="text-2xl font-bold mb-4" data-translate-key="tutoring.vocabTitle">重點字彙</h2>
-                        <div id="tutoring-vocabulary-container" class="space-y-4"></div>
-                    </div>
-                    
-                    <!-- Homework Analysis -->
-                     <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 border-2 border-white/20 text-white">
-                        <h2 class="text-2xl font-bold mb-4" data-translate-key="tutoring.analysisTitle">作業解析</h2>
-                        <div id="problem-analysis-container" class="space-y-4">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- (3) Storybook Reading View -->
-            <div id="storybook-view" class="view-content hidden">
-                 <!-- Initial State -->
-                <div id="storybook-initial-view">
-                    <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-8 border-2 border-white/20 text-white text-center">
-                        <h2 class="text-3xl font-bold mb-4" data-translate-key="storybook.title">兒童繪本朗讀</h2>
-                        <p class="text-indigo-200 mb-8 max-w-2xl mx-auto" data-translate-key="storybook.subtitle">上傳一張圖片，讓 AI 為您創作出獨一無二的有聲故事書！您可以選擇語言、年齡、風格，並隨意編輯，與孩子一同享受閱讀的樂趣。</p>
-                        <button id="start-storybook-upload-btn" class="bg-gradient-to-r from-rose-400 to-orange-300 text-white font-bold py-3 px-8 rounded-lg hover:from-rose-500 hover:to-orange-400 focus:outline-none focus:ring-4 focus:ring-orange-200 transition-all transform hover:scale-105 shadow-lg text-lg" data-translate-key="storybook.startUploadBtn">
-                            上傳繪本插圖
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Main Creation View -->
-                <div id="storybook-main-view" class="hidden">
-                    <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 border-2 border-white/20 text-white">
-                        <div id="storybook-error-message" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert"></div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <!-- Left Column: Image -->
-                            <div>
-                                <h3 class="font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="storybook.illustrationTitle">繪本插圖</h3>
-                                <div id="storybook-image-container" class="w-full aspect-square bg-black/10 rounded-lg flex items-center justify-center">
-                                     <div id="storybook-file-drop-zone" class="app-file-drop-zone rounded-lg p-8 text-center cursor-pointer w-full h-full flex flex-col justify-center items-center">
-                                        <input type="file" id="storybook-file-input" class="hidden" accept="image/*" multiple>
-                                        <img id="storybook-preview-img" class="hidden w-full h-full object-contain rounded-lg" />
-                                        <div id="storybook-upload-placeholder" class="flex flex-col items-center justify-center">
-                                            <svg class="w-16 h-16 text-white/50 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                                            </svg>
-                                            <p class="font-semibold" data-translate-key="storybook.dragDropText">點擊或拖曳圖片</p>
-                                        </div>
-                                    </div>
-                                    <p id="storybook-file-summary" class="mt-3 text-sm text-indigo-200 hidden"></p>
-                                </div>
-                            </div>
-                            <!-- Right Column: Controls & Story -->
-                            <div class="space-y-4">
-                                <h3 class="font-semibold text-lg text-white opacity-90" data-translate-key="storybook.settingsTitle">故事設定</h3>
-                                <!-- Controls Grid -->
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label for="storybook-language" class="block text-sm font-medium mb-1" data-translate-key="storybook.languageLabel">語言</label>
-                                        <select id="storybook-language" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 text-white focus:outline-none">
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label for="storybook-age" class="block text-sm font-medium mb-1" data-translate-key="storybook.ageLabel">年齡層</label>
-                                        <select id="storybook-age" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 text-white focus:outline-none">
-                                        </select>
-                                    </div>
-                                    <div class="col-span-2">
-                                         <label class="block text-sm font-medium mb-1" data-translate-key="storybook.styleLabel">故事風格</label>
-                                         <div id="storybook-style-group" class="radio-btn-group grid grid-cols-2 gap-2">
-                                            <input type="radio" id="style-warm" name="style" value="暖心" checked><label for="style-warm" class="block text-center rounded-lg p-2 text-sm" data-translate-key="storybook.styleWarm">暖心風格</label>
-                                            <input type="radio" id="style-adventure" name="style" value="冒險"><label for="style-adventure" class="block text-center rounded-lg p-2 text-sm" data-translate-key="storybook.styleAdventure">冒險風格</label>
-                                        </div>
-                                    </div>
-                                     <div class="col-span-2">
-                                        <label for="storybook-char-name" class="block text-sm font-medium mb-1" data-translate-key="storybook.charNameLabel">主要角色名稱 (選填)</label>
-                                        <input type="text" id="storybook-char-name" class="w-full p-2 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 text-white placeholder-gray-300 focus:outline-none" placeholder="例如: 小兔子邦邦" data-translate-key="storybook.charNamePlaceholder">
-                                    </div>
-                                </div>
-                                <button id="generate-story-btn" class="w-full bg-gradient-to-r from-emerald-400 to-cyan-500 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center disabled:opacity-50" disabled>
-                                    <span class="btn-text" data-translate-key="storybook.generateBtn">生成故事</span>
-                                    <div class="loader ml-2 hidden"></div>
-                                </button>
-                                
-                                <!-- Story Display and Controls -->
-                                <div id="story-output-container" class="hidden pt-4 border-t border-white/20">
-                                    <div class="flex justify-between items-center mb-2">
-                                         <h3 class="font-semibold text-lg text-white opacity-90" data-translate-key="storybook.storyTitle">AI 創作的故事</h3>
-                                         <div id="audio-controls" class="flex items-center space-x-2 hidden">
-                                             <button id="play-story-btn" class="p-2 bg-pink-500 rounded-full hover:bg-pink-600 flex items-center justify-center disabled:opacity-50">
-                                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 0 0 4.5 4.11v11.78a1.5 1.5 0 0 0 2.277 1.28l9.086-5.89a1.5 1.5 0 0 0 0-2.56L6.777 2.857A1.5 1.5 0 0 0 6.3 2.841z" /></svg>
-                                             </button>
-                                             <button id="download-audio-btn" class="p-2 bg-sky-500 rounded-full hover:bg-sky-600 flex items-center justify-center">
-                                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" /><path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" /></svg>
-                                             </button>
-                                         </div>
-                                    </div>
-                                    <div id="story-display-container" contenteditable="true" class="w-full h-48 bg-black/20 p-3 rounded-lg text-indigo-100 overflow-y-auto focus:ring-2 focus:ring-yellow-500 focus:outline-none" data-placeholder-key="storybook.storyPlaceholder">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- (4) AI Tutor View -->
-            <div id="ai-tutor-view" class="view-content hidden">
-                <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 border-2 border-white/20 text-white">
-                    <h2 class="text-3xl font-bold text-center mb-2" data-translate-key="aiTutor.title">🤖 AI 助教</h2>
-                    <p class="text-center text-indigo-200 mb-8" data-translate-key="aiTutor.subtitle">向我們的 AI 專家團隊諮詢您孩子學習與行為上的問題。</p>
-                    
-                    <div id="ai-tutor-error-message" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert"></div>
-
-                    <!-- Input Area -->
-                    <div class="mb-6">
-                        <label for="ai-tutor-input" class="block font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="aiTutor.inputLabel">① 問題輸入區</label>
-                        <textarea id="ai-tutor-input" rows="4" class="w-full p-3 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white placeholder-gray-300" placeholder="請詳細描述您觀察到的孩子學習或行為問題... (支援多語言：中文/英文/越南文)" data-translate-key="aiTutor.inputPlaceholder"></textarea>
-                    </div>
-
-                    <!-- Category Selection -->
-                    <div class="mb-6">
-                        <label class="block font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="aiTutor.categoryLabel">② 問題分類選擇</label>
-                        <div id="ai-tutor-category-group" class="flex flex-wrap gap-3">
-                        </div>
-                    </div>
-                    
-                    <!-- Expert Personas -->
-                    <div class="mb-8">
-                        <label class="block font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="aiTutor.expertLabel">③ AI 專家面板 (Expert Personas)</label>
-                        <div id="ai-tutor-expert-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        </div>
-                    </div>
-
-                    <button id="get-advice-btn" class="w-full bg-gradient-to-r from-emerald-400 to-cyan-500 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center disabled:opacity-50" disabled>
-                        <span class="btn-text" data-translate-key="aiTutor.getAdviceBtn">獲取建議</span>
-                        <div class="loader ml-2 hidden"></div>
-                    </button>
-                </div>
-                <!-- Chat Response Area -->
-                <div id="ai-tutor-response-container" class="mt-8 hidden">
-                </div>
-            </div>
-
-             <!-- (5) AI Doctor View -->
-            <div id="ai-doctor-view" class="view-content hidden">
-                 <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 border-2 border-white/20 text-white">
-                    <h2 class="text-3xl font-bold text-center mb-2" data-translate-key="aiDoctor.title">👩‍⚕️ AI 小醫生</h2>
-                    <p class="text-center text-indigo-200 mb-8" data-translate-key="aiDoctor.subtitle">描述症狀並上傳照片(選填)，我們的專業 AI 團隊將提供初步分析。</p>
-                    
-                    <div id="ai-doctor-error-message" class="hidden mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert"></div>
-
-                    <!-- Symptom Input -->
-                    <div class="mb-6">
-                        <label for="ai-doctor-input" class="block font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="aiDoctor.symptomLabel">① 症狀描述</label>
-                        <textarea id="ai-doctor-input" rows="4" class="w-full p-3 bg-white/20 border border-white/30 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white placeholder-gray-300" placeholder="請詳細描述您的症狀，例如：頭痛、胃痛、疲倦..." data-translate-key="aiDoctor.symptomPlaceholder"></textarea>
-                    </div>
-
-                    <!-- Image Upload -->
-                    <div class="mb-6">
-                        <label class="block font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="aiDoctor.uploadLabel">② 上傳照片 (選填)</label>
-                        <div id="ai-doctor-file-drop-zone" class="app-file-drop-zone rounded-lg p-8 text-center cursor-pointer">
-                            <input type="file" id="ai-doctor-file-input" class="hidden" accept="image/*" multiple>
-                             <img id="ai-doctor-preview-img" class="hidden w-48 h-48 object-contain rounded-lg mx-auto mb-4" />
-                            <div id="ai-doctor-upload-placeholder">
-                                <svg class="w-16 h-16 text-white/50 mb-4 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-                                </svg>
-                                <p class="font-semibold" data-translate-key="aiDoctor.uploadText">上傳患部或藥物照片</p>
-                            </div>
-                        </div>
-                        <p id="ai-doctor-file-summary" class="text-sm text-indigo-200 mb-6 hidden"></p>
-                    </div>
-                    
-                    <!-- Doctor Personas -->
-                    <div class="mb-8">
-                        <label class="block font-semibold text-lg mb-3 text-white opacity-90" data-translate-key="aiDoctor.expertLabel">③ 選擇 AI 專家</label>
-                        <div id="ai-doctor-expert-group" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        </div>
-                    </div>
-
-                    <button id="get-diagnosis-btn" class="w-full bg-gradient-to-r from-emerald-400 to-cyan-500 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center disabled:opacity-50" disabled>
-                        <span class="btn-text" data-translate-key="aiDoctor.getDiagnosisBtn">獲取初步診斷</span>
-                        <div class="loader ml-2 hidden"></div>
-                    </button>
-                </div>
-                 <!-- Chat Response Area for Doctor -->
-                <div id="ai-doctor-response-container" class="mt-8 hidden">
-                </div>
-            </div>
-
-            <!-- (6) AI Debate Coach View -->
-            <div id="debate-coach-view" class="view-content hidden">
-                <div class="bg-blue-900/10 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 border-2 border-white/20 text-white space-y-8">
-                    <div class="text-center">
-                        <h2 class="text-3xl font-bold mb-2" data-translate-key="debateCoach.title">AI 辯論教練</h2>
-                        <p class="text-indigo-200" data-translate-key="debateCoach.subtitle">讓孩子透過 AI 練習辯論思維與英文表達力！</p>
-                    </div>
-
-                    <div class="bg-white/10 border border-white/20 rounded-xl p-6 space-y-4 overflow-visible">
-                        <h3 class="text-2xl font-semibold" data-translate-key="debateCoach.settingsTitle">練習設定</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="relative z-10">
-                                <label for="debate-motion" class="block font-semibold mb-2 text-white/90" data-translate-key="debateCoach.selectMotion">選擇辯論主題</label>
-                                <select id="debate-motion" class="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"></select>
-                            </div>
-                            <div class="relative z-10">
-                                <label for="debate-side" class="block font-semibold mb-2 text-white/90" data-translate-key="debateCoach.selectSide">選擇立場</label>
-                                <select id="debate-side" class="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"></select>
-                            </div>
-                            <div class="relative z-10">
-                                <label for="debate-level" class="block font-semibold mb-2 text-white/90" data-translate-key="debateCoach.selectLevel">選擇等級</label>
-                                <select id="debate-level" class="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"></select>
-                            </div>
-                            <div id="debate-custom-motion-wrapper" class="hidden md:col-span-3 space-y-2">
-                                <label for="debate-custom-motion" class="block font-semibold text-white/90" data-translate-key="debateCoach.customMotion.label">自訂辯論主題</label>
-                                <input id="debate-custom-motion" type="text" class="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 placeholder:text-indigo-200/70" data-translate-key="debateCoach.customMotion.placeholder" placeholder="請輸入想要辯論的議題，例如：本院支持延長暑假。">
-                                <p id="debate-custom-motion-note" class="text-sm text-indigo-200" data-translate-key="debateCoach.customMotion.note">輸入後，練習模組會提供空白模板，請自行填寫關鍵亮點。</p>
-                            </div>
-                        </div>
-                        <div id="debate-motion-display" class="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div>
-                                <p class="text-xs uppercase tracking-wide text-indigo-200 mb-1" data-translate-key="debateCoach.motionLabel">辯論題幹</p>
-                                <p class="text-lg font-semibold text-white" data-motion-primary></p>
-                                <p class="text-sm text-indigo-200 mt-1" data-motion-secondary></p>
-                            </div>
-                            <div class="flex flex-col items-start gap-2 md:items-end">
-                                <button id="debate-toggle-bilingual" class="badge-chip cursor-pointer hover:bg-white/20 transition" type="button" data-translate-key="debateCoach.toggle_bilingual">顯示中英對照</button>
-                                <p class="text-xs text-indigo-300 leading-relaxed max-w-xs" data-translate-key="debateCoach.hint_ai_en_eval">AI 主要以英文評估。若以中文輸入，我們會先轉為英文再評估。</p>
-                            </div>
-                        </div>
-                        <p class="text-sm text-indigo-200" data-translate-key="debateCoach.settingsHint">切換設定後，下方練習模組會載入對應的假資料。</p>
-                    </div>
-
-                    <div class="bg-white/10 border border-white/20 rounded-xl p-6">
-                        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
-                            <h3 class="text-2xl font-semibold text-white" data-translate-key="debateCoach.practiceTitle">練習模組</h3>
-                            <p class="text-sm text-indigo-200" data-translate-key="debateCoach.practiceSubtitle">點擊模組標題展開練習內容與工具</p>
-                        </div>
-                        <div id="debate-modules-container" class="space-y-4"></div>
-                    </div>
-
-                    <div class="bg-white/10 border border-white/20 rounded-xl p-6">
-                        <h3 class="text-2xl font-semibold mb-4 text-white" data-translate-key="debateCoach.rubricTitle">辯論評分規準</h3>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-left text-sm text-white/90">
-                                <tbody>
-                                    <tr class="border-b border-white/10">
-                                        <th class="py-3 pr-4 font-semibold" data-translate-key="debateCoach.rubric.content">內容</th>
-                                        <td class="py-3" data-translate-key="debateCoach.rubricDescriptions.content">論點清晰、有邏輯、有證據</td>
-                                    </tr>
-                                    <tr class="border-b border-white/10">
-                                        <th class="py-3 pr-4 font-semibold" data-translate-key="debateCoach.rubric.refutation">反駁</th>
-                                        <td class="py-3" data-translate-key="debateCoach.rubricDescriptions.refutation">能指出對手漏洞並提出合理反駁</td>
-                                    </tr>
-                                    <tr class="border-b border-white/10">
-                                        <th class="py-3 pr-4 font-semibold" data-translate-key="debateCoach.rubric.delivery">表達</th>
-                                        <td class="py-3" data-translate-key="debateCoach.rubricDescriptions.delivery">語速自然、發音清晰、語氣自信</td>
-                                    </tr>
-                                    <tr class="border-b border-white/10">
-                                        <th class="py-3 pr-4 font-semibold" data-translate-key="debateCoach.rubric.strategy">策略</th>
-                                        <td class="py-3" data-translate-key="debateCoach.rubricDescriptions.strategy">結構完整、時間掌控良好</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="py-3 pr-4 font-semibold" data-translate-key="debateCoach.rubric.total">總分</th>
-                                        <td class="py-3" data-translate-key="debateCoach.rubricDescriptions.total">滿分 40 分</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Image Modal -->
-    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
-        <div class="relative max-w-4xl max-h-full">
-            <button id="close-modal" class="absolute -top-4 -right-4 text-white bg-red-600 rounded-full h-10 w-10 flex items-center justify-center z-10">&times;</button>
-            <img id="modal-image" src="" alt="Generated Image" class="w-auto h-auto max-w-full max-h-[90vh] rounded-lg shadow-2xl">
-        </div>
-    </div>
-
-    <script>
-    // --- Supabase Configuration ---
-    // For Vercel/Netlify: Set environment variables in deployment platform
-    // For local development: Values below are used as fallback
-    // Note: Supabase Anon Key is safe to expose in frontend, but using env vars is recommended for flexibility
-    const SUPABASE_URL = (typeof window !== 'undefined' && window.__SUPABASE_URL__) || 
-                         'https://jlkgqaezgoajsnimogra.supabase.co';
-    
-    const SUPABASE_ANON_KEY = (typeof window !== 'undefined' && window.__SUPABASE_ANON_KEY__) || 
-                              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsa2dxYWV6Z29hanNuaW1vZ3JhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMzM0MDAsImV4cCI6MjA4MDkwOTQwMH0.wqW8L4VmNIfeU2jLoFKmeA5ZisD_N-ILBfb_vUUxLtg';
-    
-    // Initialize Supabase client
-    let supabase = null;
-    if (typeof window !== 'undefined' && window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-    
-    // --- Authentication State ---
-    let isAuthenticated = false;
-    let currentUser = null;
-
-    // --- Authentication Functions ---
-    async function checkAuth() {
-        if (!supabase) {
-            console.error('Supabase not initialized. Please configure SUPABASE_URL and SUPABASE_ANON_KEY.');
-            return false;
-        }
-        
-        try {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (error) throw error;
-            
-            if (session) {
-                isAuthenticated = true;
-                currentUser = session.user;
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error('Auth check error:', error);
-            return false;
-        }
-    }
-
-    async function handleLogin(email, password) {
-        if (!supabase) {
-            throw new Error('Supabase not configured');
-        }
-        
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-        });
-        
-        if (error) throw error;
-        return data;
-    }
-
-    async function handleSignup(email, password) {
-        if (!supabase) {
-            throw new Error('Supabase not configured');
-        }
-        
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password
-        });
-        
-        if (error) throw error;
-        return data;
-    }
-
-    async function handleLogout() {
-        if (!supabase) return;
-        await supabase.auth.signOut();
-        isAuthenticated = false;
-        currentUser = null;
-        showLoginModal();
-    }
-
-    function showLoginModal() {
-        document.getElementById('login-modal').classList.remove('hidden');
-        document.getElementById('signup-modal').classList.add('hidden');
-        document.getElementById('main-app').classList.add('hidden');
-    }
-
-    function showSignupModal() {
-        document.getElementById('login-modal').classList.add('hidden');
-        document.getElementById('signup-modal').classList.remove('hidden');
-        document.getElementById('main-app').classList.add('hidden');
-    }
-
-    function showMainApp() {
-        document.getElementById('login-modal').classList.add('hidden');
-        document.getElementById('signup-modal').classList.add('hidden');
-        document.getElementById('main-app').classList.remove('hidden');
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) logoutBtn.classList.remove('hidden');
-    }
-
-    // --- Setup Authentication UI ---
-    function setupAuthUI() {
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const showSignupLink = document.getElementById('show-signup');
-        const showLoginLink = document.getElementById('show-login');
-        const loginError = document.getElementById('login-error');
-        const signupError = document.getElementById('signup-error');
-        const signupSuccess = document.getElementById('signup-success');
-
-        loginForm?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            loginError.classList.add('hidden');
-            
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            try {
-                await handleLogin(email, password);
-                isAuthenticated = true;
-                showMainApp();
-            } catch (error) {
-                loginError.textContent = error.message || '登入失敗，請檢查您的帳號密碼';
-                loginError.classList.remove('hidden');
-            }
-        });
-
-        signupForm?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            signupError.classList.add('hidden');
-            signupSuccess.classList.add('hidden');
-            
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            
-            try {
-                await handleSignup(email, password);
-                signupSuccess.textContent = '註冊成功！請檢查您的電子郵件以驗證帳號（如果啟用了郵件驗證）。';
-                signupSuccess.classList.remove('hidden');
-                setTimeout(() => {
-                    showLoginModal();
-                }, 2000);
-            } catch (error) {
-                signupError.textContent = error.message || '註冊失敗，請稍後再試';
-                signupError.classList.remove('hidden');
-            }
-        });
-
-        showSignupLink?.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSignupModal();
-        });
-
-        showLoginLink?.addEventListener('click', (e) => {
-            e.preventDefault();
-            showLoginModal();
-        });
-
-        // Logout button
-        const logoutBtn = document.getElementById('logout-btn');
-        logoutBtn?.addEventListener('click', async () => {
-            await handleLogout();
-        });
-
-        // Listen for auth state changes
-        if (supabase) {
-            supabase.auth.onAuthStateChange((event, session) => {
-                if (event === 'SIGNED_IN' && session) {
-                    isAuthenticated = true;
-                    currentUser = session.user;
-                    showMainApp();
-                    logoutBtn?.classList.remove('hidden');
-                } else if (event === 'SIGNED_OUT') {
-                    isAuthenticated = false;
-                    currentUser = null;
-                    showLoginModal();
-                    logoutBtn?.classList.add('hidden');
-                }
-            });
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        // Setup authentication UI first
-        setupAuthUI();
-        
-        // Check if user is already authenticated
-        const authenticated = await checkAuth();
-        if (authenticated) {
-            showMainApp();
-        } else {
-            showLoginModal();
-        }
+    document.addEventListener('DOMContentLoaded', () => {
 
         // --- State Management ---
         let currentLang = 'zh-Hant';
@@ -3502,6 +2583,77 @@
             'ja': ['国語', '数学', '英語', '理科', '社会', 'その他']
         };
 
+        const tutoringLevelSynonyms = {
+            kindergarten: ['幼稚園', 'kindergarten', 'mẫu giáo', 'mau giao', 'mầm non', '幼稚園'],
+            elementary: ['國小', '小學', 'elementary', 'tiểu học', 'tieu hoc', '小学校'],
+            middle: ['國中', '初中', 'middle school', 'trung học cơ sở', 'trung hoc co so', '中学校'],
+            high: ['高中', 'high school', 'trung học phổ thông', 'trung hoc pho thong', '高校'],
+            university: ['大學', 'university', 'đại học', 'dai hoc', '大学'],
+            other: ['其他', 'other', 'khác', 'khac', 'その他']
+        };
+
+        const tutoringSubjectSynonyms = {
+            math: ['數學', '数学', 'math', 'mathematics', 'toán', 'toan', '算数', '算術']
+        };
+
+        function normalizeTutoringLevel(level) {
+            if (!level) return 'other';
+            const normalized = level.toString().trim().toLowerCase();
+            for (const [key, values] of Object.entries(tutoringLevelSynonyms)) {
+                if (values.some(value => value.toLowerCase() === normalized)) {
+                    return key;
+                }
+            }
+            return 'other';
+        }
+
+        function normalizeTutoringSubject(subject) {
+            if (!subject) return 'other';
+            const normalized = subject.toString().trim().toLowerCase();
+            for (const [key, values] of Object.entries(tutoringSubjectSynonyms)) {
+                if (values.some(value => value.toLowerCase() === normalized)) {
+                    return key;
+                }
+            }
+            return 'other';
+        }
+
+        function getTutoringLevelGuidance(level, subject) {
+            const normalizedLevel = normalizeTutoringLevel(level);
+            const normalizedSubject = normalizeTutoringSubject(subject);
+            let guidance = '';
+
+            switch (normalizedLevel) {
+                case 'kindergarten':
+                    guidance = 'Use playful wording, one short sentence per step, and rely on counting or drawing activities so the child can follow without advanced terms.';
+                    break;
+                case 'elementary':
+                    guidance = 'Explain each idea with short, cheerful sentences and connect steps to everyday objects so an elementary student can follow without prior knowledge.';
+                    break;
+                case 'middle':
+                    guidance = 'Provide clear reasoning with simple sentences, define any new vocabulary, and offer relatable examples suitable for a middle-school learner.';
+                    break;
+                case 'high':
+                    guidance = 'Offer structured explanations that show the reasoning and include terminology a high-school learner would know, adding reminders for any advanced ideas.';
+                    break;
+                case 'university':
+                    guidance = 'Write concise, rigorous explanations that highlight the underlying concepts expected at university level.';
+                    break;
+                default:
+                    guidance = 'Adapt the language so it matches the learner’s background and avoids unnecessary jargon.';
+            }
+
+            if (normalizedSubject === 'math') {
+                if (normalizedLevel === 'elementary') {
+                    guidance += ' For math problems, present up to three clearly labelled approaches (for example, "方法一"/"Approach 1", "方法二"/"Approach 2") such as a story-based method, a drawing or manipulatives method, and the standard calculation, each kept to three short steps with every new term explained in plain words.';
+                } else {
+                    guidance += ' For math problems, walk through the steps in order and justify each operation so the learner understands why it works.';
+                }
+            }
+
+            return guidance;
+        }
+
         const storybook_ages = {
             'zh-Hant': ['2-4歲', '5-7歲', '8-10歲'],
             'en': ['2-4 years', '5-7 years', '8-10 years'],
@@ -3662,20 +2814,7 @@
         const closeModalBtn = document.getElementById('close-modal');
 
         // --- API Configuration ---
-        // API key is now stored securely in Supabase Edge Function
-        const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/gemini-proxy`;
-        
-        // Helper function to get auth token
-        async function getAuthToken() {
-            if (!supabase || !isAuthenticated) {
-                throw new Error('User not authenticated');
-            }
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                throw new Error('No active session');
-            }
-            return session.access_token;
-        }
+        const apiKey = "AIzaSyD08MzD3ahC2opquhZ9r93TwoOTmQb86a0"; // Canvas will provide this
         
         // --- API Call Functions ---
         async function handleApiError(response) {
@@ -3711,13 +2850,7 @@
         }
 
         async function callGeminiAPI(prompt, systemPrompt = "", base64Image = null, model = "gemini-2.5-flash-preview-09-2025") {
-            // Check authentication
-            if (!isAuthenticated) {
-                throw new Error('請先登入以使用此功能');
-            }
-
-            const authToken = await getAuthToken();
-            const apiUrl = EDGE_FUNCTION_URL;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
             const parts = [{ text: prompt }];
             if (base64Image) {
@@ -3730,8 +2863,6 @@
             }
 
             const payload = {
-                endpoint: 'generateContent',
-                model: model,
                 contents: [{ role: "user", parts: parts }],
             };
             
@@ -3750,10 +2881,7 @@
                 while (retries > 0) {
                     response = await fetch(apiUrl, {
                         method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${authToken}`
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
 
@@ -3789,17 +2917,11 @@
         }
         
         async function callTTSAPI(text, button = null, options = {}) {
-            // Check authentication
-            if (!isAuthenticated) {
-                throw new Error('請先登入以使用此功能');
-            }
-
             if (button) {
                 button.classList.add('loading');
             }
             try {
-                const authToken = await getAuthToken();
-                const apiUrl = EDGE_FUNCTION_URL;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
                 const speechProfile = options.speechProfile || null;
                 const voiceCandidates = Array.from(new Set([options.voiceName || voiceProfiles.default, voiceProfiles.default]));
                 const rateCandidates = speechProfile?.apiRate ? [speechProfile.apiRate, null] : [null];
@@ -3814,8 +2936,6 @@
                         speechConfig.speakingRate = speakingRate;
                     }
                     const payload = {
-                        endpoint: 'generateContent',
-                        model: 'gemini-2.5-flash-preview-tts',
                         contents: [{ parts: [{ text }] }],
                         generationConfig: {
                             responseModalities: ["AUDIO"],
@@ -3828,10 +2948,7 @@
                     while (retries > 0) {
                         const response = await fetch(apiUrl, {
                             method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${authToken}`
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
                         });
 
@@ -3905,16 +3022,8 @@
         }
         
         async function callImagenAPI(prompt) {
-            // Check authentication
-            if (!isAuthenticated) {
-                throw new Error('請先登入以使用此功能');
-            }
-
-            const authToken = await getAuthToken();
-            const apiUrl = EDGE_FUNCTION_URL;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
             const payload = {
-                endpoint: 'generateContent',
-                model: 'gemini-2.5-flash-image-preview',
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
             };
@@ -3927,10 +3036,7 @@
                 while (retries > 0) {
                     response = await fetch(apiUrl, {
                         method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${authToken}`
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
                     
@@ -4499,8 +3605,12 @@ Output ONLY a single, valid JSON object in the following format. Omit "vocabular
                      subject = tutoringCustomSubjectInput.value || 'Custom';
                  }
                  const language = tutoringLanguageSelect.options[tutoringLanguageSelect.selectedIndex].text;
+                 const levelGuidance = getTutoringLevelGuidance(level, subject);
 
                  const systemPrompt = `You are an AI tutor analyzing homework. Output a valid JSON object. All property names must be double-quoted. Output ONLY the JSON object.`;
+                 const adaptationInstruction = levelGuidance
+                     ? `4. ${levelGuidance}`
+                     : `4. Adapt the explanations so they feel natural for a student at the ${level} level using encouraging language and concrete examples.`;
                  const prompt = `Analyze this homework image${fileCount > 1 ? ` (1st of ${fileCount} uploaded files)` : ''}. The student's level is ${level}, the subject is ${subject}. Provide all text in ${language}.
 1. Identify the key concepts being tested in the homework.
 2. Provide a step-by-step analysis for each distinct problem you can see.
@@ -4510,6 +3620,7 @@ Output ONLY a single, valid JSON object in the following format. Omit "vocabular
    - "phonetic": an IPA (or syllable-style) pronunciation guide
    - "example": a simple example sentence using the word in ${language}
 If fewer than six suitable words exist, include as many as possible.
+${adaptationInstruction}
 
 Return ONLY a valid JSON object with the following shape:
 {
@@ -6392,7 +5503,4 @@ document.addEventListener('click', (event) => {
 
         init();
     });
-    </script>
-    </div> <!-- End of main-app -->
-</body>
-</html>
+    
