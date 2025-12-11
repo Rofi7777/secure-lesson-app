@@ -1036,7 +1036,21 @@
         </div>
     </div>
 
+    <!-- Details Modal -->
+    <div id="details-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="relative max-w-4xl w-full bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 rounded-xl shadow-2xl p-6 md:p-8 my-8 border-2 border-white/20">
+            <button id="close-details-modal" class="absolute top-4 right-4 text-white bg-red-600 hover:bg-red-700 rounded-full h-10 w-10 flex items-center justify-center z-10 transition-colors">&times;</button>
+            <div id="details-modal-content" class="text-white">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script>
+    // --- Global State ---
+    // Make currentLang globally accessible for login page language switching
+    let currentLang = 'zh-Hant';
+    
     // --- Supabase Configuration ---
     // For Vercel/Netlify: Set environment variables in deployment platform
     // For local development: Values below are used as fallback
@@ -1547,18 +1561,19 @@
         loginLanguageSwitcher?.addEventListener('change', (e) => {
             const lang = e.target.value;
             // Update currentLang immediately
-            if (typeof currentLang !== 'undefined') {
-                currentLang = lang;
-            }
-            // Try to call setLanguage, with fallback
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            
+            // Update translations immediately
+            updateLoginPageTranslations(lang);
+            
+            // Also try to call setLanguage if available (for main app)
             setTimeout(() => {
                 if (typeof setLanguage === 'function') {
                     setLanguage(lang);
-                } else {
-                    // Manual translation update for login page
-                    updateLoginPageTranslations(lang);
                 }
             }, 0);
+            
             // Sync with main language switcher
             const mainLangSwitcher = document.getElementById('language-switcher');
             if (mainLangSwitcher) {
@@ -1569,18 +1584,19 @@
         signupLanguageSwitcher?.addEventListener('change', (e) => {
             const lang = e.target.value;
             // Update currentLang immediately
-            if (typeof currentLang !== 'undefined') {
-                currentLang = lang;
-            }
-            // Try to call setLanguage, with fallback
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            
+            // Update translations immediately
+            updateSignupPageTranslations(lang);
+            
+            // Also try to call setLanguage if available (for main app)
             setTimeout(() => {
                 if (typeof setLanguage === 'function') {
                     setLanguage(lang);
-                } else {
-                    // Manual translation update for signup page
-                    updateSignupPageTranslations(lang);
                 }
             }, 0);
+            
             // Sync with main language switcher
             const mainLangSwitcher = document.getElementById('language-switcher');
             if (mainLangSwitcher) {
@@ -1597,18 +1613,49 @@
                 return;
             }
             const t = translations[lang].login;
+            const mainT = translations[lang];
+            
+            // Update all elements with login translation keys
             document.querySelectorAll('[data-translate-key^="login."]').forEach(el => {
                 const key = el.dataset.translateKey.replace('login.', '');
                 if (t[key]) {
                     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
                         el.placeholder = t[key];
-                    } else if (el.tagName === 'SPAN' || el.tagName === 'P' || el.tagName === 'LABEL' || el.tagName === 'H1' || el.tagName === 'H2') {
+                    } else if (el.tagName === 'SPAN' || el.tagName === 'P' || el.tagName === 'LABEL' || el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'BUTTON') {
                         el.textContent = t[key];
                     } else {
                         el.textContent = t[key];
                     }
                 }
             });
+            
+            // Update main subtitle if it exists
+            const subtitleEl = document.querySelector('[data-translate-key="main_subtitle"]');
+            if (subtitleEl && mainT.main_subtitle) {
+                subtitleEl.textContent = mainT.main_subtitle;
+            }
+            
+            // Update main title "多語言學習平台" if translation exists
+            const loginModal = document.getElementById('login-modal');
+            if (loginModal) {
+                const titleH1 = loginModal.querySelector('h1');
+                if (titleH1 && mainT.main_title) {
+                    // Check if it's the title with spans
+                    const spans = titleH1.querySelectorAll('span');
+                    if (spans.length >= 2 && mainT.main_title) {
+                        // Split title if it contains separator, otherwise use as is
+                        const titleParts = mainT.main_title.split(' ');
+                        if (titleParts.length >= 2) {
+                            spans[0].textContent = titleParts[0];
+                            spans[1].textContent = titleParts.slice(1).join(' ');
+                        } else {
+                            // If no space, try to split by common separators or use first part
+                            spans[0].textContent = mainT.main_title.substring(0, Math.ceil(mainT.main_title.length / 2));
+                            spans[1].textContent = mainT.main_title.substring(Math.ceil(mainT.main_title.length / 2));
+                        }
+                    }
+                }
+            }
         }
         
         // Helper function to update signup page translations
@@ -1726,7 +1773,7 @@
         }
 
         // --- State Management ---
-        let currentLang = 'zh-Hant';
+        // currentLang is now defined globally above
         let currentLesson = null;
         let storyAudioBlob = null;
         let storyAudioUrl = null;
@@ -5651,9 +5698,13 @@
         // Load lessons history
         async function loadLessonsHistory() {
             try {
-                const result = await callLearningProgress('get_lessons', { limit: 50, offset: 0 });
+                const [lessonsResult, favoritesResult] = await Promise.all([
+                    callLearningProgress('get_lessons', { limit: 50, offset: 0 }),
+                    callLearningProgress('get_favorites', { limit: 1000, offset: 0 }).catch(() => ({ data: [] }))
+                ]);
+                
                 const container = document.getElementById('lessons-container');
-                if (!result.data || result.data.length === 0) {
+                if (!lessonsResult.data || lessonsResult.data.length === 0) {
                     container.innerHTML = `<div class="text-center text-indigo-200 py-8">
                         <i class="fas fa-book text-4xl mb-4 opacity-50"></i>
                         <p data-translate-key="myLearning.noLessons">還沒有課程記錄</p>
@@ -5661,9 +5712,17 @@
                     return;
                 }
                 
-                container.innerHTML = result.data.map(lesson => {
+                // Create a set of favorited lesson IDs
+                const favoritedLessons = new Set(
+                    (favoritesResult.data || [])
+                        .filter(f => f.item_type === 'lesson')
+                        .map(f => f.item_id)
+                );
+                
+                container.innerHTML = lessonsResult.data.map(lesson => {
                     const content = lesson.content || {};
                     const date = new Date(lesson.created_at).toLocaleDateString(currentLang === 'zh-Hant' ? 'zh-TW' : currentLang);
+                    const isFavorited = favoritedLessons.has(lesson.id);
                     return `
                         <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                             <div class="flex justify-between items-start mb-2">
@@ -5675,8 +5734,8 @@
                                         <span><i class="fas fa-users mr-1"></i>${lesson.age_group}</span>
                                     </div>
                                 </div>
-                                <button class="favorite-btn text-yellow-300 hover:text-yellow-200" data-item-type="lesson" data-item-id="${lesson.id}">
-                                    <i class="far fa-star"></i>
+                                <button class="favorite-btn text-yellow-300 hover:text-yellow-200 cursor-pointer transition-colors" data-item-type="lesson" data-item-id="${lesson.id}" type="button">
+                                    <i class="${isFavorited ? 'fas' : 'far'} fa-star"></i>
                                 </button>
                             </div>
                             <p class="text-sm text-white/70 mb-2 line-clamp-2">${content.explanation?.[currentLang] || content.explanation?.['zh-Hant'] || ''}</p>
@@ -5698,9 +5757,13 @@
         // Load stories history
         async function loadStoriesHistory() {
             try {
-                const result = await callLearningProgress('get_stories', { limit: 50, offset: 0 });
+                const [storiesResult, favoritesResult] = await Promise.all([
+                    callLearningProgress('get_stories', { limit: 50, offset: 0 }),
+                    callLearningProgress('get_favorites', { limit: 1000, offset: 0 }).catch(() => ({ data: [] }))
+                ]);
+                
                 const container = document.getElementById('stories-container');
-                if (!result.data || result.data.length === 0) {
+                if (!storiesResult.data || storiesResult.data.length === 0) {
                     container.innerHTML = `<div class="text-center text-indigo-200 py-8">
                         <i class="fas fa-book-reader text-4xl mb-4 opacity-50"></i>
                         <p data-translate-key="myLearning.noStories">還沒有故事記錄</p>
@@ -5708,9 +5771,17 @@
                     return;
                 }
                 
-                container.innerHTML = result.data.map(story => {
+                // Create a set of favorited story IDs
+                const favoritedStories = new Set(
+                    (favoritesResult.data || [])
+                        .filter(f => f.item_type === 'story')
+                        .map(f => f.item_id)
+                );
+                
+                container.innerHTML = storiesResult.data.map(story => {
                     const date = new Date(story.created_at).toLocaleDateString(currentLang === 'zh-Hant' ? 'zh-TW' : currentLang);
                     const preview = story.story_text.substring(0, 150) + (story.story_text.length > 150 ? '...' : '');
+                    const isFavorited = favoritedStories.has(story.id);
                     return `
                         <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                             <div class="flex justify-between items-start mb-2">
@@ -5722,8 +5793,8 @@
                                         <span><i class="fas fa-palette mr-1"></i>${story.style}</span>
                                     </div>
                                 </div>
-                                <button class="favorite-btn text-yellow-300 hover:text-yellow-200" data-item-type="story" data-item-id="${story.id}">
-                                    <i class="far fa-star"></i>
+                                <button class="favorite-btn text-yellow-300 hover:text-yellow-200 cursor-pointer transition-colors" data-item-type="story" data-item-id="${story.id}" type="button">
+                                    <i class="${isFavorited ? 'fas' : 'far'} fa-star"></i>
                                 </button>
                             </div>
                             <p class="text-sm text-white/70 mb-2 line-clamp-3">${preview}</p>
@@ -5745,9 +5816,13 @@
         // Load tutoring sessions history
         async function loadTutoringHistory() {
             try {
-                const result = await callLearningProgress('get_tutoring_sessions', { limit: 50, offset: 0 });
+                const [tutoringResult, favoritesResult] = await Promise.all([
+                    callLearningProgress('get_tutoring_sessions', { limit: 50, offset: 0 }),
+                    callLearningProgress('get_favorites', { limit: 1000, offset: 0 }).catch(() => ({ data: [] }))
+                ]);
+                
                 const container = document.getElementById('tutoring-container');
-                if (!result.data || result.data.length === 0) {
+                if (!tutoringResult.data || tutoringResult.data.length === 0) {
                     container.innerHTML = `<div class="text-center text-indigo-200 py-8">
                         <i class="fas fa-graduation-cap text-4xl mb-4 opacity-50"></i>
                         <p data-translate-key="myLearning.noTutoring">還沒有作業輔導記錄</p>
@@ -5755,9 +5830,17 @@
                     return;
                 }
                 
-                container.innerHTML = result.data.map(session => {
+                // Create a set of favorited tutoring session IDs
+                const favoritedTutoring = new Set(
+                    (favoritesResult.data || [])
+                        .filter(f => f.item_type === 'tutoring')
+                        .map(f => f.item_id)
+                );
+                
+                container.innerHTML = tutoringResult.data.map(session => {
                     const date = new Date(session.created_at).toLocaleDateString(currentLang === 'zh-Hant' ? 'zh-TW' : currentLang);
                     const analysis = session.analysis_content || {};
+                    const isFavorited = favoritedTutoring.has(session.id);
                     return `
                         <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                             <div class="flex justify-between items-start mb-2">
@@ -5768,8 +5851,8 @@
                                         <span><i class="fas fa-language mr-1"></i>${session.language}</span>
                                     </div>
                                 </div>
-                                <button class="favorite-btn text-yellow-300 hover:text-yellow-200" data-item-type="tutoring" data-item-id="${session.id}">
-                                    <i class="far fa-star"></i>
+                                <button class="favorite-btn text-yellow-300 hover:text-yellow-200 cursor-pointer transition-colors" data-item-type="tutoring" data-item-id="${session.id}" type="button">
+                                    <i class="${isFavorited ? 'fas' : 'far'} fa-star"></i>
                                 </button>
                             </div>
                             <p class="text-sm text-white/70 mb-2 line-clamp-2">${analysis.summary || ''}</p>
@@ -5805,6 +5888,280 @@
             } catch (error) {
                 console.error('Failed to load favorites:', error);
                 document.getElementById('favorites-container').innerHTML = `<div class="text-center text-red-300 py-8">載入失敗</div>`;
+            }
+        }
+        
+        // Show lesson details
+        async function showLessonDetails(lessonId) {
+            try {
+                const result = await callLearningProgress('get_lessons', { limit: 1000, offset: 0 });
+                const lesson = result.data?.find(l => l.id === lessonId);
+                if (!lesson) {
+                    alert('找不到課程資料');
+                    return;
+                }
+                
+                const content = lesson.content || {};
+                const date = new Date(lesson.created_at).toLocaleDateString(currentLang === 'zh-Hant' ? 'zh-TW' : currentLang);
+                const explanation = content.explanation?.[currentLang] || content.explanation?.['zh-Hant'] || content.explanation?.['en'] || '';
+                
+                let detailsHTML = `
+                    <h2 class="text-3xl font-bold mb-4 text-yellow-300">${lesson.topic}</h2>
+                    <div class="flex flex-wrap gap-4 mb-6 text-sm text-indigo-200">
+                        <span><i class="fas fa-book mr-1"></i>${lesson.lesson_type || 'N/A'}</span>
+                        <span><i class="fas fa-graduation-cap mr-1"></i>${lesson.subject || 'N/A'}</span>
+                        <span><i class="fas fa-users mr-1"></i>${lesson.age_group || 'N/A'}</span>
+                        <span><i class="far fa-calendar mr-1"></i>${date}</span>
+                    </div>
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-3 text-yellow-300" data-translate-key="myLearning.topic">主題說明</h3>
+                        <p class="text-white/90 leading-relaxed whitespace-pre-wrap">${explanation}</p>
+                    </div>
+                `;
+                
+                if (content.vocabulary && Object.keys(content.vocabulary).length > 0) {
+                    const vocab = content.vocabulary[currentLang] || content.vocabulary['zh-Hant'] || content.vocabulary['en'] || {};
+                    if (Object.keys(vocab).length > 0) {
+                        detailsHTML += `
+                            <div class="mb-6">
+                                <h3 class="text-xl font-bold mb-3 text-yellow-300" data-translate-key="vocabTitle">重點字彙</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    ${Object.entries(vocab).map(([word, def]) => `
+                                        <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                                            <div class="font-bold text-yellow-300 mb-1">${word}</div>
+                                            <div class="text-sm text-white/80">${def}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                if (content.phrases && Object.keys(content.phrases).length > 0) {
+                    const phrases = content.phrases[currentLang] || content.phrases['zh-Hant'] || content.phrases['en'] || {};
+                    if (Object.keys(phrases).length > 0) {
+                        detailsHTML += `
+                            <div class="mb-6">
+                                <h3 class="text-xl font-bold mb-3 text-yellow-300" data-translate-key="phraseTitle">常用片語</h3>
+                                <div class="space-y-3">
+                                    ${Object.entries(phrases).map(([phrase, meaning]) => `
+                                        <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                                            <div class="font-bold text-yellow-300 mb-1">${phrase}</div>
+                                            <div class="text-sm text-white/80">${meaning}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                if (lesson.image_url) {
+                    detailsHTML += `
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold mb-3 text-yellow-300" data-translate-key="imageTitle">課程圖片</h3>
+                            <img src="${lesson.image_url}" alt="${lesson.topic}" class="rounded-lg shadow-lg w-full max-w-md mx-auto cursor-pointer" onclick="document.getElementById('modal-image').src = this.src; document.getElementById('image-modal').classList.remove('hidden'); document.getElementById('image-modal').classList.add('flex');">
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('details-modal-content').innerHTML = detailsHTML;
+                document.getElementById('details-modal').classList.remove('hidden');
+                document.getElementById('details-modal').classList.add('flex');
+            } catch (error) {
+                console.error('Failed to load lesson details:', error);
+                alert('載入課程詳情失敗: ' + error.message);
+            }
+        }
+        
+        // Show story details
+        async function showStoryDetails(storyId) {
+            try {
+                const result = await callLearningProgress('get_stories', { limit: 1000, offset: 0 });
+                const story = result.data?.find(s => s.id === storyId);
+                if (!story) {
+                    alert('找不到故事資料');
+                    return;
+                }
+                
+                const date = new Date(story.created_at).toLocaleDateString(currentLang === 'zh-Hant' ? 'zh-TW' : currentLang);
+                
+                let detailsHTML = `
+                    <h2 class="text-3xl font-bold mb-4 text-yellow-300">${story.character_name || '故事'}</h2>
+                    <div class="flex flex-wrap gap-4 mb-6 text-sm text-indigo-200">
+                        <span><i class="fas fa-language mr-1"></i>${story.language || 'N/A'}</span>
+                        <span><i class="fas fa-users mr-1"></i>${story.age_group || 'N/A'}</span>
+                        <span><i class="fas fa-palette mr-1"></i>${story.style || 'N/A'}</span>
+                        <span><i class="far fa-calendar mr-1"></i>${date}</span>
+                    </div>
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-3 text-yellow-300">故事內容</h3>
+                        <div class="bg-white/10 rounded-lg p-6 border border-white/20">
+                            <p class="text-white/90 leading-relaxed whitespace-pre-wrap">${story.story_text || ''}</p>
+                        </div>
+                    </div>
+                `;
+                
+                if (story.image_url) {
+                    detailsHTML += `
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold mb-3 text-yellow-300">故事圖片</h3>
+                            <img src="${story.image_url}" alt="Story image" class="rounded-lg shadow-lg w-full max-w-md mx-auto cursor-pointer" onclick="document.getElementById('modal-image').src = this.src; document.getElementById('image-modal').classList.remove('hidden'); document.getElementById('image-modal').classList.add('flex');">
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('details-modal-content').innerHTML = detailsHTML;
+                document.getElementById('details-modal').classList.remove('hidden');
+                document.getElementById('details-modal').classList.add('flex');
+            } catch (error) {
+                console.error('Failed to load story details:', error);
+                alert('載入故事詳情失敗: ' + error.message);
+            }
+        }
+        
+        // Show tutoring session details
+        async function showTutoringDetails(tutoringId) {
+            try {
+                const result = await callLearningProgress('get_tutoring_sessions', { limit: 1000, offset: 0 });
+                const session = result.data?.find(s => s.id === tutoringId);
+                if (!session) {
+                    alert('找不到作業輔導資料');
+                    return;
+                }
+                
+                const date = new Date(session.created_at).toLocaleDateString(currentLang === 'zh-Hant' ? 'zh-TW' : currentLang);
+                const analysis = session.analysis_content || {};
+                
+                let detailsHTML = `
+                    <h2 class="text-3xl font-bold mb-4 text-yellow-300">${session.subject || '作業輔導'}</h2>
+                    <div class="flex flex-wrap gap-4 mb-6 text-sm text-indigo-200">
+                        <span><i class="fas fa-layer-group mr-1"></i>${session.level || 'N/A'}</span>
+                        <span><i class="fas fa-language mr-1"></i>${session.language || 'N/A'}</span>
+                        <span><i class="far fa-calendar mr-1"></i>${date}</span>
+                    </div>
+                `;
+                
+                if (analysis.summary) {
+                    detailsHTML += `
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold mb-3 text-yellow-300" data-translate-key="tutoring.analysisTitle">作業解析</h3>
+                            <div class="bg-white/10 rounded-lg p-6 border border-white/20">
+                                <p class="text-white/90 leading-relaxed whitespace-pre-wrap">${analysis.summary}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (analysis.key_concepts && analysis.key_concepts.length > 0) {
+                    detailsHTML += `
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold mb-3 text-yellow-300" data-translate-key="tutoring.conceptsTitle">重點導學</h3>
+                            <div class="space-y-3">
+                                ${analysis.key_concepts.map(concept => `
+                                    <div class="bg-white/10 rounded-lg p-4 border border-white/20">
+                                        <div class="font-bold text-yellow-300 mb-2">${concept.concept || concept}</div>
+                                        ${concept.explanation ? `<div class="text-sm text-white/80">${concept.explanation}</div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (analysis.vocabulary && analysis.vocabulary.length > 0) {
+                    detailsHTML += `
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold mb-3 text-yellow-300" data-translate-key="tutoring.vocabTitle">重點字彙</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${analysis.vocabulary.map(vocab => `
+                                    <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                                        <div class="font-bold text-yellow-300 mb-1">${vocab.word || vocab}</div>
+                                        ${vocab.definition ? `<div class="text-sm text-white/80">${vocab.definition}</div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (analysis.problems && analysis.problems.length > 0) {
+                    detailsHTML += `
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold mb-3 text-yellow-300">問題分析</h3>
+                            <div class="space-y-4">
+                                ${analysis.problems.map((problem, idx) => `
+                                    <div class="bg-white/10 rounded-lg p-4 border border-white/20">
+                                        <div class="font-bold text-yellow-300 mb-2">問題 ${idx + 1}</div>
+                                        ${problem.question ? `<div class="text-white/90 mb-2">${problem.question}</div>` : ''}
+                                        ${problem.solution ? `<div class="text-sm text-white/80"><strong>解答：</strong>${problem.solution}</div>` : ''}
+                                        ${problem.explanation ? `<div class="text-sm text-white/70 mt-2">${problem.explanation}</div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('details-modal-content').innerHTML = detailsHTML;
+                document.getElementById('details-modal').classList.remove('hidden');
+                document.getElementById('details-modal').classList.add('flex');
+            } catch (error) {
+                console.error('Failed to load tutoring details:', error);
+                alert('載入作業輔導詳情失敗: ' + error.message);
+            }
+        }
+        
+        // Toggle favorite status
+        async function toggleFavorite(itemType, itemId, buttonElement) {
+            try {
+                console.log('Toggle favorite called:', { itemType, itemId });
+                
+                // Disable button during operation to prevent double clicks
+                buttonElement.disabled = true;
+                
+                // Check current favorite status by checking icon
+                const icon = buttonElement.querySelector('i');
+                if (!icon) {
+                    console.error('Icon not found in favorite button');
+                    buttonElement.disabled = false;
+                    return;
+                }
+                
+                const isFavorited = icon.classList.contains('fas');
+                console.log('Current favorite status:', isFavorited);
+                
+                if (isFavorited) {
+                    // Remove favorite
+                    console.log('Removing favorite...');
+                    await callLearningProgress('remove_favorite', {
+                        item_type: itemType,
+                        item_id: itemId
+                    });
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    console.log('Favorite removed successfully');
+                } else {
+                    // Add favorite
+                    console.log('Adding favorite...');
+                    await callLearningProgress('add_favorite', {
+                        item_type: itemType,
+                        item_id: itemId
+                    });
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    console.log('Favorite added successfully');
+                }
+                
+                // Refresh stats
+                await loadLearningStats();
+            } catch (error) {
+                console.error('Failed to toggle favorite:', error);
+                alert('操作失敗: ' + (error.message || '未知錯誤'));
+            } finally {
+                // Re-enable button
+                buttonElement.disabled = false;
             }
         }
 
@@ -7596,6 +7953,62 @@ document.addEventListener('click', (event) => {
         event.preventDefault();
         triggerAudioDownload(downloadBtn);
     }
+    
+    // Handle view details buttons
+    const viewDetailsBtn = event.target.closest('.view-details-btn');
+    if (viewDetailsBtn) {
+        event.preventDefault();
+        const lessonId = viewDetailsBtn.dataset.lessonId;
+        if (lessonId) {
+            showLessonDetails(lessonId);
+        }
+    }
+    
+    const viewStoryBtn = event.target.closest('.view-story-btn');
+    if (viewStoryBtn) {
+        event.preventDefault();
+        const storyId = viewStoryBtn.dataset.storyId;
+        if (storyId) {
+            showStoryDetails(storyId);
+        }
+    }
+    
+    const viewTutoringBtn = event.target.closest('.view-tutoring-btn');
+    if (viewTutoringBtn) {
+        event.preventDefault();
+        const tutoringId = viewTutoringBtn.dataset.tutoringId;
+        if (tutoringId) {
+            showTutoringDetails(tutoringId);
+        }
+    }
+    
+    // Handle favorite button clicks (including clicks on the icon inside)
+    let favoriteBtn = event.target.closest('.favorite-btn');
+    // If clicked on icon, find parent button
+    if (!favoriteBtn && event.target.closest('i.fa-star')) {
+        favoriteBtn = event.target.closest('i.fa-star').closest('.favorite-btn');
+    }
+    // If still not found, check if target itself is the button
+    if (!favoriteBtn && event.target.classList.contains('favorite-btn')) {
+        favoriteBtn = event.target;
+    }
+    // If clicked directly on icon, find parent button
+    if (!favoriteBtn && (event.target.tagName === 'I' && event.target.classList.contains('fa-star'))) {
+        favoriteBtn = event.target.parentElement;
+    }
+    
+    if (favoriteBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        const itemType = favoriteBtn.dataset.itemType;
+        const itemId = favoriteBtn.dataset.itemId;
+        console.log('Favorite button clicked:', { itemType, itemId, target: event.target, button: favoriteBtn });
+        if (itemType && itemId) {
+            toggleFavorite(itemType, itemId, favoriteBtn);
+        } else {
+            console.warn('Favorite button missing data attributes:', { itemType, itemId, button: favoriteBtn, dataset: favoriteBtn.dataset });
+        }
+    }
 });
 
     function handleDebateOptionChange(event) {
@@ -8003,6 +8416,24 @@ document.addEventListener('click', (event) => {
                 imageModal.classList.add('hidden');
                 imageModal.classList.remove('flex');
             });
+            
+            // Close details modal
+            const closeDetailsModalBtn = document.getElementById('close-details-modal');
+            const detailsModal = document.getElementById('details-modal');
+            if (closeDetailsModalBtn && detailsModal) {
+                closeDetailsModalBtn.addEventListener('click', () => {
+                    detailsModal.classList.add('hidden');
+                    detailsModal.classList.remove('flex');
+                });
+                // Close modal when clicking outside
+                detailsModal.addEventListener('click', (e) => {
+                    if (e.target === detailsModal) {
+                        detailsModal.classList.add('hidden');
+                        detailsModal.classList.remove('flex');
+                    }
+                });
+            }
+            
             
             startUploadBtn.addEventListener('click', () => {
                 tutoringInitialView.classList.add('hidden');
