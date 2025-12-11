@@ -1560,11 +1560,15 @@
         
         loginLanguageSwitcher?.addEventListener('change', (e) => {
             const lang = e.target.value;
+            console.log('Login language switcher changed to:', lang);
+            
             // Update currentLang immediately
             currentLang = lang;
             document.documentElement.lang = lang;
             
             // Update translations immediately
+            console.log('Calling updateLoginPageTranslations with lang:', lang);
+            console.log('translations available?', typeof translations !== 'undefined');
             updateLoginPageTranslations(lang);
             
             // Also try to call setLanguage if available (for main app)
@@ -1579,6 +1583,11 @@
             if (mainLangSwitcher) {
                 mainLangSwitcher.value = lang;
             }
+        });
+        
+        // Also add click event for better compatibility
+        loginLanguageSwitcher?.addEventListener('click', (e) => {
+            console.log('Login language switcher clicked');
         });
         
         signupLanguageSwitcher?.addEventListener('change', (e) => {
@@ -1606,56 +1615,101 @@
         
         // Helper function to update login page translations
         function updateLoginPageTranslations(lang) {
-            // Wait for translations to be available
-            if (typeof translations === 'undefined' || !translations[lang] || !translations[lang].login) {
-                // Retry after a short delay if translations not ready
-                setTimeout(() => updateLoginPageTranslations(lang), 100);
-                return;
-            }
-            const t = translations[lang].login;
-            const mainT = translations[lang];
+            console.log('updateLoginPageTranslations called with lang:', lang);
+            console.log('translations type:', typeof translations);
             
-            // Update all elements with login translation keys
-            document.querySelectorAll('[data-translate-key^="login."]').forEach(el => {
-                const key = el.dataset.translateKey.replace('login.', '');
-                if (t[key]) {
-                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                        el.placeholder = t[key];
-                    } else if (el.tagName === 'SPAN' || el.tagName === 'P' || el.tagName === 'LABEL' || el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'BUTTON') {
-                        el.textContent = t[key];
+            // Wait for translations to be available (with retry limit)
+            let retryCount = 0;
+            const maxRetries = 50; // 5 seconds max wait
+            
+            const tryUpdate = () => {
+                if (typeof translations === 'undefined' || !translations[lang] || !translations[lang].login) {
+                    retryCount++;
+                    if (retryCount < maxRetries) {
+                        console.log(`Translations not ready, retrying... (${retryCount}/${maxRetries})`);
+                        setTimeout(tryUpdate, 100);
+                        return;
                     } else {
-                        el.textContent = t[key];
+                        console.error('Translations not available after max retries');
+                        return;
                     }
                 }
-            });
-            
-            // Update main subtitle if it exists
-            const subtitleEl = document.querySelector('[data-translate-key="main_subtitle"]');
-            if (subtitleEl && mainT.main_subtitle) {
-                subtitleEl.textContent = mainT.main_subtitle;
-            }
-            
-            // Update main title "多語言學習平台" if translation exists
-            const loginModal = document.getElementById('login-modal');
-            if (loginModal) {
-                const titleH1 = loginModal.querySelector('h1');
-                if (titleH1 && mainT.main_title) {
-                    // Check if it's the title with spans
-                    const spans = titleH1.querySelectorAll('span');
-                    if (spans.length >= 2 && mainT.main_title) {
-                        // Split title if it contains separator, otherwise use as is
-                        const titleParts = mainT.main_title.split(' ');
-                        if (titleParts.length >= 2) {
-                            spans[0].textContent = titleParts[0];
-                            spans[1].textContent = titleParts.slice(1).join(' ');
+                
+                console.log('Translations found, updating page...');
+                const t = translations[lang].login;
+                const mainT = translations[lang];
+                
+                // Update all elements with login translation keys
+                const elements = document.querySelectorAll('[data-translate-key^="login."]');
+                console.log(`Found ${elements.length} elements with login translation keys`);
+                
+                elements.forEach(el => {
+                    const key = el.dataset.translateKey.replace('login.', '');
+                    if (t[key]) {
+                        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                            el.placeholder = t[key];
+                            console.log(`Updated placeholder for ${key}:`, t[key]);
+                        } else if (el.tagName === 'SPAN' || el.tagName === 'P' || el.tagName === 'LABEL' || el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'BUTTON') {
+                            el.textContent = t[key];
+                            console.log(`Updated text for ${key}:`, t[key]);
                         } else {
-                            // If no space, try to split by common separators or use first part
-                            spans[0].textContent = mainT.main_title.substring(0, Math.ceil(mainT.main_title.length / 2));
-                            spans[1].textContent = mainT.main_title.substring(Math.ceil(mainT.main_title.length / 2));
+                            el.textContent = t[key];
+                            console.log(`Updated text (fallback) for ${key}:`, t[key]);
+                        }
+                    } else {
+                        console.warn(`Translation key not found: login.${key}`);
+                    }
+                });
+                
+                // Update main subtitle if it exists
+                const subtitleEl = document.querySelector('[data-translate-key="main_subtitle"]');
+                if (subtitleEl && mainT.main_subtitle) {
+                    subtitleEl.textContent = mainT.main_subtitle;
+                    console.log('Updated main_subtitle:', mainT.main_subtitle);
+                }
+                
+                // Update main title "多語言學習平台" if translation exists
+                const loginModal = document.getElementById('login-modal');
+                if (loginModal) {
+                    const titleH1 = loginModal.querySelector('h1');
+                    if (titleH1) {
+                        // Check if it's the title with spans
+                        const spans = titleH1.querySelectorAll('span');
+                        if (spans.length >= 2) {
+                            if (mainT.main_title) {
+                                // Split title if it contains separator, otherwise use as is
+                                const titleParts = mainT.main_title.split(' ');
+                                if (titleParts.length >= 2) {
+                                    spans[0].textContent = titleParts[0];
+                                    spans[1].textContent = titleParts.slice(1).join(' ');
+                                } else {
+                                    // If no space, try to split by common separators or use first part
+                                    spans[0].textContent = mainT.main_title.substring(0, Math.ceil(mainT.main_title.length / 2));
+                                    spans[1].textContent = mainT.main_title.substring(Math.ceil(mainT.main_title.length / 2));
+                                }
+                                console.log('Updated main title:', mainT.main_title);
+                            } else {
+                                // Try to use pageTitle if main_title not available
+                                if (mainT.pageTitle) {
+                                    const titleParts = mainT.pageTitle.split(' ');
+                                    if (titleParts.length >= 2) {
+                                        spans[0].textContent = titleParts[0];
+                                        spans[1].textContent = titleParts.slice(1).join(' ');
+                                    } else {
+                                        spans[0].textContent = mainT.pageTitle.substring(0, Math.ceil(mainT.pageTitle.length / 2));
+                                        spans[1].textContent = mainT.pageTitle.substring(Math.ceil(mainT.pageTitle.length / 2));
+                                    }
+                                    console.log('Updated main title from pageTitle:', mainT.pageTitle);
+                                }
+                            }
                         }
                     }
                 }
-            }
+                
+                console.log('Translation update complete');
+            };
+            
+            tryUpdate();
         }
         
         // Helper function to update signup page translations
