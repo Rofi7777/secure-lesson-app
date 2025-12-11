@@ -1616,14 +1616,39 @@
         // Helper function to update login page translations
         function updateLoginPageTranslations(lang) {
             console.log('updateLoginPageTranslations called with lang:', lang);
-            console.log('translations type:', typeof translations);
+            
+            // Try to access translations from multiple possible scopes
+            let translationsObj = null;
+            
+            // Try to get translations from window object (if it's global)
+            if (typeof window !== 'undefined' && window.translations) {
+                translationsObj = window.translations;
+                console.log('Found translations on window object');
+            }
+            // Try to get from the DOMContentLoaded scope (closure)
+            else if (typeof translations !== 'undefined') {
+                translationsObj = translations;
+                console.log('Found translations in closure scope');
+            }
+            // Try to get from the init function scope
+            else {
+                console.log('translations type:', typeof translations);
+                console.log('window.translations type:', typeof (typeof window !== 'undefined' ? window.translations : 'N/A'));
+            }
             
             // Wait for translations to be available (with retry limit)
             let retryCount = 0;
             const maxRetries = 50; // 5 seconds max wait
             
             const tryUpdate = () => {
-                if (typeof translations === 'undefined' || !translations[lang] || !translations[lang].login) {
+                // Re-check translations on each retry
+                if (typeof window !== 'undefined' && window.translations) {
+                    translationsObj = window.translations;
+                } else if (typeof translations !== 'undefined') {
+                    translationsObj = translations;
+                }
+                
+                if (!translationsObj || !translationsObj[lang] || !translationsObj[lang].login) {
                     retryCount++;
                     if (retryCount < maxRetries) {
                         console.log(`Translations not ready, retrying... (${retryCount}/${maxRetries})`);
@@ -1631,13 +1656,15 @@
                         return;
                     } else {
                         console.error('Translations not available after max retries');
+                        console.error('translationsObj:', translationsObj);
+                        console.error('lang:', lang);
                         return;
                     }
                 }
                 
                 console.log('Translations found, updating page...');
-                const t = translations[lang].login;
-                const mainT = translations[lang];
+                const t = translationsObj[lang].login;
+                const mainT = translationsObj[lang];
                 
                 // Update all elements with login translation keys
                 const elements = document.querySelectorAll('[data-translate-key^="login."]');
@@ -2003,6 +2030,7 @@
         }
 
         // --- Translation Data ---
+        // Make translations globally accessible for login page
         const translations = {
             'zh-Hant': {
                 main_title: 'LingoVerse AI', main_subtitle: '您的 AI 學習宇宙',
@@ -8399,6 +8427,12 @@ document.addEventListener('click', (event) => {
         }
         
         // --- Initialization ---
+        // Expose translations to global scope for login page access
+        if (typeof translations !== 'undefined') {
+            window.translations = translations;
+            console.log('Translations exposed to global scope');
+        }
+        
         function init() {
             mainNav.addEventListener('click', handleNavClick);
             languageSwitcher.addEventListener('change', (e) => setLanguage(e.target.value));
