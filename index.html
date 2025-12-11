@@ -5719,7 +5719,29 @@
             
             const result = await response.json();
             if (!response.ok) {
-                throw new Error(result.error || '操作失敗');
+                // Extract detailed error message
+                let errorMessage = '操作失敗';
+                if (result.error) {
+                    if (typeof result.error === 'string') {
+                        errorMessage = result.error;
+                    } else if (result.error.message) {
+                        errorMessage = result.error.message;
+                    } else if (result.error.details) {
+                        errorMessage = result.error.details;
+                    }
+                }
+                if (result.details) {
+                    errorMessage += ': ' + result.details;
+                }
+                console.error('API Error:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    result: result,
+                    errorMessage: errorMessage,
+                    action: action,
+                    payload: payload
+                });
+                throw new Error(errorMessage);
             }
             
             return result;
@@ -6198,7 +6220,16 @@
         // Toggle favorite status
         async function toggleFavorite(itemType, itemId, buttonElement) {
             try {
-                console.log('Toggle favorite called:', { itemType, itemId });
+                console.log('Toggle favorite called:', { itemType, itemId, itemIdType: typeof itemId });
+                
+                // Validate inputs
+                if (!itemType || !itemId) {
+                    throw new Error('缺少必要參數：itemType 或 itemId');
+                }
+                
+                // Ensure itemId is a string
+                const itemIdStr = String(itemId);
+                console.log('Using itemId:', itemIdStr);
                 
                 // Disable button during operation to prevent double clicks
                 buttonElement.disabled = true;
@@ -6217,30 +6248,56 @@
                 if (isFavorited) {
                     // Remove favorite
                     console.log('Removing favorite...');
-                    await callLearningProgress('remove_favorite', {
-                        item_type: itemType,
-                        item_id: itemId
-                    });
-                    icon.classList.remove('fas');
-                    icon.classList.add('far');
-                    console.log('Favorite removed successfully');
+                    try {
+                        const result = await callLearningProgress('remove_favorite', {
+                            item_type: itemType,
+                            item_id: itemIdStr
+                        });
+                        console.log('Remove favorite result:', result);
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        console.log('Favorite removed successfully');
+                    } catch (removeError) {
+                        console.error('Remove favorite error details:', {
+                            error: removeError,
+                            message: removeError.message,
+                            stack: removeError.stack,
+                            itemType,
+                            itemId: itemIdStr
+                        });
+                        throw new Error('移除收藏失敗: ' + (removeError.message || '未知錯誤'));
+                    }
                 } else {
                     // Add favorite
                     console.log('Adding favorite...');
-                    await callLearningProgress('add_favorite', {
-                        item_type: itemType,
-                        item_id: itemId
-                    });
-                    icon.classList.remove('far');
-                    icon.classList.add('fas');
-                    console.log('Favorite added successfully');
+                    try {
+                        const result = await callLearningProgress('add_favorite', {
+                            item_type: itemType,
+                            item_id: itemIdStr
+                        });
+                        console.log('Add favorite result:', result);
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        console.log('Favorite added successfully');
+                    } catch (addError) {
+                        console.error('Add favorite error details:', {
+                            error: addError,
+                            message: addError.message,
+                            stack: addError.stack,
+                            itemType,
+                            itemId: itemIdStr
+                        });
+                        throw new Error('添加收藏失敗: ' + (addError.message || '未知錯誤'));
+                    }
                 }
                 
                 // Refresh stats
                 await loadLearningStats();
             } catch (error) {
                 console.error('Failed to toggle favorite:', error);
-                alert('操作失敗: ' + (error.message || '未知錯誤'));
+                const errorMessage = error.message || error.toString() || '未知錯誤';
+                alert('操作失敗: ' + errorMessage);
+                // Don't update icon if operation failed
             } finally {
                 // Re-enable button
                 buttonElement.disabled = false;
