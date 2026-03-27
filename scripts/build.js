@@ -16,10 +16,11 @@ const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPA
 const configPath = path.join(__dirname, '..', 'js', 'config.js');
 let config = fs.readFileSync(configPath, 'utf8');
 
-// Replace placeholders if environment variables are set
+// Replace values using simple line-based matching
+// Config format: SUPABASE_URL: 'value',
 if (SUPABASE_URL) {
   config = config.replace(
-    /SUPABASE_URL:.*?['\"].*?['\"]/,
+    /SUPABASE_URL: '[^']*'/,
     `SUPABASE_URL: '${SUPABASE_URL}'`
   );
   console.log('✓ Replaced SUPABASE_URL with environment variable');
@@ -27,7 +28,7 @@ if (SUPABASE_URL) {
 
 if (SUPABASE_ANON_KEY) {
   config = config.replace(
-    /SUPABASE_ANON_KEY:.*?['\"].*?['\"]/,
+    /SUPABASE_ANON_KEY: '[^']*'/,
     `SUPABASE_ANON_KEY: '${SUPABASE_ANON_KEY}'`
   );
   console.log('✓ Replaced SUPABASE_ANON_KEY with environment variable');
