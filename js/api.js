@@ -39,7 +39,7 @@ App.api = {
         }
     },
 
-    async callGeminiAPI(prompt, systemPrompt = "", base64Image = null, model = "gemini-2.5-flash-preview-09-2025", usePersonalization = true) {
+    async callGeminiAPI(prompt, systemPrompt = "", base64Image = null, model = "gemini-2.5-flash", usePersonalization = true) {
         const apiUrl = `${App.config.GEMINI_API_BASE}/${model}:generateContent?key=${App.config.GEMINI_API_KEY}`;
 
         const parts = [{ text: prompt }];
