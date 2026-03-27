@@ -77,10 +77,11 @@ App.i18n = {
         });
 
         App.i18n.updateAllSelectOptions();
-        App.i18n.updateTopicSelection(
-            document.getElementById('subject-group')
-                .querySelector('input[name="subject"]:checked').value
-        );
+        var subjectGroup = document.getElementById('subject-group');
+        var checkedSubject = subjectGroup ? subjectGroup.querySelector('input[name="subject"]:checked') : null;
+        if (checkedSubject) {
+            App.i18n.updateTopicSelection(checkedSubject.value);
+        }
 
         // Re-render view components (safety-checked)
         if (App.views && App.views.aiTutor && App.views.aiTutor.renderExpertCards) {
@@ -99,9 +100,8 @@ App.i18n = {
             App.views.debate.renderDebateModules();
         }
 
-        App.i18n.updateStorybookSummary(App.state.storybookFiles.length);
-        App.i18n.updateTutoringSummary(App.state.tutoringFiles.length);
-        App.i18n.updateDoctorSummary(App.state.aiDoctorFiles.length);
+        App.i18n.updateStorybookSummary(App.state.storybookFiles ? App.state.storybookFiles.length : 0);
+        App.i18n.updateTutoringSummary(App.state.tutoringFiles ? App.state.tutoringFiles.length : 0);
 
         var generateStoryBtn = document.getElementById('generate-story-btn');
         var analyzeHomeworkBtn = document.getElementById('analyze-homework-btn');
@@ -315,7 +315,7 @@ App.i18n = {
 
     // --- Check if subject allows custom topic ---
     allowsCustomTopic: function(subject) {
-        return subject === 'KidsEnglish' || subject === 'AdultEnglish';
+        return true; // All subjects support custom topics
     },
 
     // --- Topic selection updater ---
