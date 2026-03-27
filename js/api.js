@@ -113,7 +113,7 @@ App.api = {
             button.classList.add('loading');
         }
         try {
-            const ttsModel = 'gemini-2.5-flash-preview-tts';
+            const ttsModel = 'gemini-2.5-flash-preview-tts'; // TTS still in preview
             const apiUrl = `${App.config.GEMINI_API_BASE}/${ttsModel}:generateContent?key=${App.config.GEMINI_API_KEY}`;
             const speechProfile = options.speechProfile || null;
             const voiceCandidates = Array.from(new Set([options.voiceName || App.config.voiceProfiles.default, App.config.voiceProfiles.default]));
@@ -217,7 +217,7 @@ App.api = {
     },
 
     async callImagenAPI(prompt) {
-        const imagenModel = 'gemini-2.5-flash-image-preview';
+        const imagenModel = 'gemini-2.0-flash-exp';
         const apiUrl = `${App.config.GEMINI_API_BASE}/${imagenModel}:generateContent?key=${App.config.GEMINI_API_KEY}`;
         const payload = {
             contents: [{ parts: [{ text: prompt }] }],
