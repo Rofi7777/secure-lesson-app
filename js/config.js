@@ -6,7 +6,7 @@ App.config = {
     SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsa2dxYWV6Z29hanNuaW1vZ3JhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMzM0MDAsImV4cCI6MjA4MDkwOTQwMH0.wqW8L4VmNIfeU2jLoFKmeA5ZisD_N-ILBfb_vUUxLtg',
 
     // Gemini API
-    GEMINI_API_KEY: 'AIzaSyDcOHV0lnvAzvrgH-SCPJ1zzKpwLoteURk',
+    GEMINI_API_KEY: '',
     GEMINI_API_BASE: 'https://generativelanguage.googleapis.com/v1beta/models'
 };
 
