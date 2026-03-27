@@ -217,7 +217,7 @@ App.api = {
     },
 
     async callImagenAPI(prompt) {
-        const imagenModel = 'gemini-2.0-flash-exp';
+        const imagenModel = 'gemini-2.5-flash-image';
         const apiUrl = `${App.config.GEMINI_API_BASE}/${imagenModel}:generateContent?key=${App.config.GEMINI_API_KEY}`;
         const payload = {
             contents: [{ parts: [{ text: prompt }] }],
