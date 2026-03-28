@@ -536,6 +536,29 @@
                 </div>
                 <!-- Lesson Display Area -->
                 <div id="lesson-container" class="mt-8 hidden"></div>
+
+                <!-- Learning Progress Dashboard -->
+                <div id="learning-dashboard" class="mt-8 bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 text-white hidden">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-line text-yellow-400"></i>
+                        <span data-translate-key="dashboard.title">學習進度</span>
+                    </h3>
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-white/10 rounded-lg p-4 text-center">
+                            <div id="dash-total" class="text-3xl font-bold text-yellow-400">0</div>
+                            <div class="text-xs text-indigo-200 mt-1" data-translate-key="dashboard.totalLessons">已完成課程</div>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-4 text-center">
+                            <div id="dash-streak" class="text-3xl font-bold text-emerald-400">0</div>
+                            <div class="text-xs text-indigo-200 mt-1" data-translate-key="dashboard.streak">連續天數</div>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-4 text-center">
+                            <div id="dash-days" class="text-3xl font-bold text-purple-300">0</div>
+                            <div class="text-xs text-indigo-200 mt-1" data-translate-key="dashboard.activeDays">活躍天數</div>
+                        </div>
+                    </div>
+                    <div id="dash-recent" class="space-y-2"></div>
+                </div>
             </div>
 
             <!-- (2) Student Tutoring View -->
@@ -838,6 +861,7 @@
     <script src="js/api.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/learning-tracker.js"></script>
     <script src="js/views/platform.js"></script>
     <script src="js/views/tutoring.js"></script>
     <script src="js/views/storybook.js"></script>

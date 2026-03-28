@@ -96,6 +96,10 @@ App.translations = {
             updateSuccess: '已成功更新用戶', updateFailed: '更新失敗',
             neverLoggedIn: '從未登入', registeredAt: '註冊時間', lastLogin: '最後登入',
             createdAt: '建立時間', updatedAt: '更新時間', notes: '備註'
+        },
+        dashboard: {
+            title: '學習進度', totalLessons: '已完成課程', streak: '連續天數', activeDays: '活躍天數',
+            recentTitle: '最近學習', noHistory: '尚未開始學習，生成你的第一堂課吧！'
         }
     },
     'en': {
@@ -193,6 +197,10 @@ App.translations = {
             updateSuccess: 'User updated successfully', updateFailed: 'Update failed',
             neverLoggedIn: 'Never logged in', registeredAt: 'Registered', lastLogin: 'Last login',
             createdAt: 'Created', updatedAt: 'Updated', notes: 'Notes'
+        },
+        dashboard: {
+            title: 'Learning Progress', totalLessons: 'Lessons Done', streak: 'Day Streak', activeDays: 'Active Days',
+            recentTitle: 'Recent Studies', noHistory: 'No lessons yet. Generate your first lesson!'
         }
     },
     'vi': {
@@ -290,6 +298,10 @@ App.translations = {
             updateSuccess: 'Cập nhật thành công', updateFailed: 'Cập nhật thất bại',
             neverLoggedIn: 'Chưa đăng nhập', registeredAt: 'Ngày đăng ký', lastLogin: 'Đăng nhập cuối',
             createdAt: 'Ngày tạo', updatedAt: 'Ngày cập nhật', notes: 'Ghi chú'
+        },
+        dashboard: {
+            title: 'Tiến độ học tập', totalLessons: 'Bài đã hoàn thành', streak: 'Chuỗi ngày', activeDays: 'Ngày hoạt động',
+            recentTitle: 'Gần đây', noHistory: 'Chưa có bài học. Hãy tạo bài học đầu tiên!'
         }
     },
     'ja': {
@@ -387,6 +399,10 @@ App.translations = {
             updateSuccess: 'ユーザーを更新しました', updateFailed: '更新失敗',
             neverLoggedIn: '未ログイン', registeredAt: '登録日', lastLogin: '最終ログイン',
             createdAt: '作成日', updatedAt: '更新日', notes: 'メモ'
+        },
+        dashboard: {
+            title: '学習の進捗', totalLessons: '完了レッスン', streak: '連続日数', activeDays: 'アクティブ日数',
+            recentTitle: '最近の学習', noHistory: 'まだレッスンがありません。最初のレッスンを作りましょう！'
         }
     }
 };

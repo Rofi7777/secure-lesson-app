@@ -380,7 +380,9 @@ App.views.platform = {
                 return;
             }
 
-            const systemPrompt = 'You are an expert curriculum designer. Your task is to generate a mini-lesson as a single, valid JSON object. The lesson is for a ' + age + ' old student, the format is "' + lessonType + '". All property names in the JSON must be enclosed in double quotes. Output ONLY the JSON object.';
+            // Inject learning history context for personalization
+            const learningContext = App.learningTracker ? App.learningTracker.getPersonalizationContext() : '';
+            const systemPrompt = 'You are an expert curriculum designer. Your task is to generate a mini-lesson as a single, valid JSON object. The lesson is for a ' + age + ' old student, the format is "' + lessonType + '". All property names in the JSON must be enclosed in double quotes. Output ONLY the JSON object.' + (learningContext ? '\n\n' + learningContext : '');
             const userPrompt = 'Generate a mini-lesson about "' + topic + '" in the subject of ' + subject + '. The main learning language for this lesson is ' + langName + '.\n' +
 'The lesson must include:\n' +
 '1.  An "explanation" paragraph about the topic, tailored to the lesson type "' + lessonType + '". **This explanation must be detailed and between 500 and 600 words.** Provide this explanation in an object with four language versions: Traditional Chinese (\u7E41\u9AD4\u4E2D\u6587), English, Vietnamese (Ti\u1EBFng Vi\u1EC7t), and Japanese (\u65E5\u672C\u8A9E).\n' +
@@ -428,6 +430,11 @@ App.views.platform = {
 
             // Cache to localStorage
             App.views.platform._setCachedLesson(cacheKey, App.state.currentLesson);
+
+            // Record for AI personalization
+            if (App.learningTracker) {
+                App.learningTracker.recordLesson({ subject, topic, age, lessonType });
+            }
 
             // Save lesson to history (guarded)
             if (App.state.isAuthenticated && typeof saveLessonToHistory === 'function') {

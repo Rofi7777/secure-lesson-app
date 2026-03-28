@@ -91,6 +91,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (viewId === 'admin-view') {
             App.views.admin.loadAdminData();
         }
+        if (viewId === 'platform-view') {
+            renderDashboard();
+        }
+    }
+
+    // --- Learning Dashboard ---
+    function renderDashboard() {
+        const dashEl = document.getElementById('learning-dashboard');
+        if (!dashEl || !App.learningTracker) return;
+        const stats = App.learningTracker.getStats();
+        if (stats.totalLessons === 0) {
+            dashEl.classList.add('hidden');
+            return;
+        }
+        dashEl.classList.remove('hidden');
+        document.getElementById('dash-total').textContent = stats.totalLessons;
+        document.getElementById('dash-streak').textContent = stats.streak;
+        document.getElementById('dash-days').textContent = stats.activeDays;
+
+        const recentEl = document.getElementById('dash-recent');
+        const lang = App.state.currentLang;
+        const dashT = App.translations[lang]?.dashboard || App.translations['en']?.dashboard || {};
+        if (stats.recentTopics.length > 0) {
+            recentEl.innerHTML = '<p class="text-sm font-medium text-indigo-200 mb-2">' + (dashT.recentTitle || 'Recent') + '</p>' +
+                stats.recentTopics.slice(0, 5).map(t => {
+                    const date = new Date(t.ts).toLocaleDateString();
+                    return '<div class="flex justify-between items-center bg-white/5 rounded px-3 py-2 text-sm">' +
+                        '<span class="text-white">' + t.topic + ' <span class="text-indigo-300">(' + t.subject + ')</span></span>' +
+                        '<span class="text-indigo-300 text-xs">' + date + '</span></div>';
+                }).join('');
+        }
     }
 
     // --- Navigation ---
