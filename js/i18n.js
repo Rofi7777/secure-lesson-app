@@ -83,21 +83,10 @@ App.i18n = {
             App.i18n.updateTopicSelection(checkedSubject.value);
         }
 
-        // Re-render view components (safety-checked)
-        if (App.views && App.views.aiTutor && App.views.aiTutor.renderExpertCards) {
-            App.views.aiTutor.renderExpertCards();
-        }
-        if (App.views && App.views.aiDoctor && App.views.aiDoctor.renderDoctorCards) {
-            App.views.aiDoctor.renderDoctorCards();
-        }
-        if (App.views && App.views.aiTutor && App.views.aiTutor.renderTutorCategories) {
-            App.views.aiTutor.renderTutorCategories();
-        }
-        if (App.views && App.views.debate && App.views.debate.populateDebateSelects) {
-            App.views.debate.populateDebateSelects();
-        }
-        if (App.views && App.views.debate && App.views.debate.renderDebateModules) {
-            App.views.debate.renderDebateModules();
+        // Re-render view components
+        if (App.views && App.views.aiTutor) {
+            if (App.views.aiTutor.renderExpertCards) App.views.aiTutor.renderExpertCards();
+            if (App.views.aiTutor.renderTutorCategories) App.views.aiTutor.renderTutorCategories();
         }
 
         App.i18n.updateStorybookSummary(App.state.storybookFiles ? App.state.storybookFiles.length : 0);

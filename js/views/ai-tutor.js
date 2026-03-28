@@ -33,22 +33,13 @@ App.views.aiTutor = {
     getAdviceOrDiagnosis: async function(isDoctor, followUpText) {
         if (followUpText === undefined) followUpText = null;
 
-        var chatHistory = isDoctor ? App.state.aiDoctorChatHistory : App.state.aiTutorChatHistory;
-        var responseContainer = isDoctor
-            ? document.getElementById('ai-doctor-response-container')
-            : document.getElementById('ai-tutor-response-container');
-        var inputEl = isDoctor
-            ? document.getElementById('ai-doctor-input')
-            : document.getElementById('ai-tutor-input');
-        var expertGroup = isDoctor
-            ? document.getElementById('ai-doctor-expert-group')
-            : document.getElementById('ai-tutor-expert-group');
-        var button = isDoctor
-            ? document.getElementById('get-diagnosis-btn')
-            : document.getElementById('get-advice-btn');
-        var errorEl = isDoctor
-            ? document.getElementById('ai-doctor-error-message')
-            : document.getElementById('ai-tutor-error-message');
+        // AI Doctor feature removed — only tutor mode supported
+        var chatHistory = App.state.aiTutorChatHistory;
+        var responseContainer = document.getElementById('ai-tutor-response-container');
+        var inputEl = document.getElementById('ai-tutor-input');
+        var expertGroup = document.getElementById('ai-tutor-expert-group');
+        var button = document.getElementById('get-advice-btn');
+        var errorEl = document.getElementById('ai-tutor-error-message');
 
         var userInput = followUpText || inputEl.value.trim();
         if (!userInput) return;
@@ -78,13 +69,14 @@ App.views.aiTutor = {
         responseContainer.scrollTop = responseContainer.scrollHeight;
 
         try {
-            var expertData = isDoctor ? App.data.aiDoctorsData[currentExpertId] : App.data.aiExpertsData[currentExpertId];
+            var expertData = App.data.aiExpertsData[currentExpertId];
+            if (!expertData) {
+                App.utils.displayError(errorEl, "Expert not found.");
+                return;
+            }
 
             var isFirstTurn = chatHistory.length === 0;
             var base64Image = null;
-            if (isDoctor && App.state.aiDoctorFiles.length && isFirstTurn) {
-                base64Image = await App.utils.base64FromFile(App.state.aiDoctorFiles[0]);
-            }
 
             chatHistory.push({ role: 'user', text: userInput, expertId: currentExpertId }); // Store expertId with the turn
             var fullPrompt = chatHistory.map(function(turn) { return turn.role + ': ' + turn.text; }).join('\n');

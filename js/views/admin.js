@@ -50,18 +50,24 @@ renderPendingUsers: function(users) {
     container.innerHTML = users.map(function(user) {
         var createdDate = new Date(user.created_at).toLocaleString('zh-TW');
         var lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString('zh-TW') : '從未登入';
+        var safeEmail = user.email.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         return '<div class="bg-white/10 rounded-lg p-4 border border-white/20">' +
             '<div class="flex justify-between items-start">' +
             '<div class="flex-1">' +
-            '<p class="font-semibold text-lg">' + user.email + '</p>' +
+            '<p class="font-semibold text-lg">' + safeEmail + '</p>' +
             '<p class="text-sm text-indigo-200 mt-1">註冊時間: ' + createdDate + '</p>' +
             '<p class="text-sm text-indigo-200">最後登入: ' + lastSignIn + '</p>' +
             '</div>' +
-            '<button onclick="App.views.admin.approveUser(\'' + user.id + '\', \'' + user.email + '\')" ' +
-            'class="ml-4 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium">' +
+            '<button class="admin-approve-btn ml-4 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium" data-user-id="' + user.id + '" data-email="' + safeEmail + '">' +
             '<i class="fas fa-check mr-2"></i>審核通過' +
             '</button></div></div>';
     }).join('');
+    // Attach event listeners safely (no inline onclick)
+    container.querySelectorAll('.admin-approve-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            App.views.admin.approveUser(btn.dataset.userId, btn.dataset.email);
+        });
+    });
 },
 
 renderAuthorizedUsers: function(users) {
@@ -76,31 +82,35 @@ renderAuthorizedUsers: function(users) {
     container.innerHTML = users.map(function(user) {
         var createdDate = new Date(user.created_at).toLocaleString('zh-TW');
         var updatedDate = new Date(user.updated_at).toLocaleString('zh-TW');
+        var safeEmail = (user.email || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        var safeNotes = (user.notes || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         var statusBadge = user.is_active
             ? '<span class="px-2 py-1 bg-green-600 rounded text-xs">啟用</span>'
             : '<span class="px-2 py-1 bg-red-600 rounded text-xs">停用</span>';
-        var actionButton = user.is_active
-            ? '<button onclick="App.views.admin.updateUserStatus(\'' + user.user_id + '\', false)" ' +
-              'class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium">' +
-              '<i class="fas fa-ban mr-2"></i>停用</button>'
-            : '<button onclick="App.views.admin.updateUserStatus(\'' + user.user_id + '\', true)" ' +
-              'class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium">' +
-              '<i class="fas fa-check mr-2"></i>啟用</button>';
+        var btnClass = user.is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700';
+        var btnIcon = user.is_active ? 'fa-ban' : 'fa-check';
+        var btnLabel = user.is_active ? '停用' : '啟用';
         return '<div class="bg-white/10 rounded-lg p-4 border border-white/20">' +
             '<div class="flex justify-between items-start">' +
             '<div class="flex-1">' +
             '<div class="flex items-center gap-2 mb-2">' +
-            '<p class="font-semibold text-lg">' + user.email + '</p>' +
+            '<p class="font-semibold text-lg">' + safeEmail + '</p>' +
             statusBadge +
             '</div>' +
             '<p class="text-sm text-indigo-200">建立時間: ' + createdDate + '</p>' +
             '<p class="text-sm text-indigo-200">更新時間: ' + updatedDate + '</p>' +
-            (user.notes ? '<p class="text-sm text-indigo-200 mt-1">備註: ' + user.notes + '</p>' : '') +
+            (user.notes ? '<p class="text-sm text-indigo-200 mt-1">備註: ' + safeNotes + '</p>' : '') +
             '</div>' +
             '<div class="ml-4 flex gap-2">' +
-            actionButton +
+            '<button class="admin-status-btn px-4 py-2 ' + btnClass + ' rounded-lg text-sm font-medium" data-user-id="' + user.user_id + '" data-active="' + !user.is_active + '">' +
+            '<i class="fas ' + btnIcon + ' mr-2"></i>' + btnLabel + '</button>' +
             '</div></div></div>';
     }).join('');
+    container.querySelectorAll('.admin-status-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            App.views.admin.updateUserStatus(btn.dataset.userId, btn.dataset.active === 'true');
+        });
+    });
 },
 
 approveUser: async function(userId, email) {
@@ -141,6 +151,3 @@ updateUserStatus: async function(userId, isActive) {
 
 };
 
-// Make functions globally accessible for onclick handlers
-window.approveUser = function(userId, email) { App.views.admin.approveUser(userId, email); };
-window.updateUserStatus = function(userId, isActive) { App.views.admin.updateUserStatus(userId, isActive); };

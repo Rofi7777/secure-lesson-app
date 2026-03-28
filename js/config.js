@@ -20,7 +20,6 @@ App.state = {
     storyAudioBlob: null,
     storyAudioUrl: null,
     aiTutorChatHistory: [],
-    aiDoctorChatHistory: [],
     storybookFiles: [],
     tutoringFiles: [],
     explanationAudioBlobs: {},
