@@ -9,9 +9,17 @@ App.i18n = {
         App.i18n._languageCallbacks.push(fn);
     },
 
+    // --- Get common UI string (with fallback to English) ---
+    t: function(key) {
+        const lang = App.state.currentLang;
+        return (App.translations[lang] && App.translations[lang].common && App.translations[lang].common[key]) ||
+               (App.translations['en'] && App.translations['en'].common && App.translations['en'].common[key]) ||
+               key;
+    },
+
     // --- Core language setter ---
     setLanguage: function(lang) {
-        var previousLang = App.state.currentLang;
+        const previousLang = App.state.currentLang;
         App.state.currentLang = lang;
         document.documentElement.lang = lang;
 
@@ -25,12 +33,12 @@ App.i18n = {
             }
         }
 
-        document.querySelectorAll('[data-translate-key]').forEach(function(el) {
-            var key = el.dataset.translateKey;
-            var keys = key.split('.');
-            var translation = App.translations[lang];
+        document.querySelectorAll('[data-translate-key]').forEach((el) => {
+            const key = el.dataset.translateKey;
+            const keys = key.split('.');
+            let translation = App.translations[lang];
             try {
-                for (var i = 0; i < keys.length; i++) {
+                for (let i = 0; i < keys.length; i++) {
                     translation = translation[keys[i]];
                 }
             } catch (e) {
@@ -57,18 +65,18 @@ App.i18n = {
                 }
             } else if (typeof translation === 'object' && el.id === 'lesson-type-group') {
                 // Handle radio button group labels
-                Object.entries(translation).forEach(function(pair) {
-                    var label = el.querySelector('label[for="type-' + pair[0] + '"]');
+                Object.entries(translation).forEach((pair) => {
+                    const label = el.querySelector('label[for="type-' + pair[0] + '"]');
                     if (label) label.textContent = pair[1];
                 });
             } else if (typeof translation === 'object' && el.id === 'storybook-style-group') {
                 // Handle storybook style labels
-                var storybookTranslations = App.translations[lang].storybook;
+                const storybookTranslations = App.translations[lang].storybook;
                 if (storybookTranslations) {
-                    Object.entries(storybookTranslations).forEach(function(pair) {
+                    Object.entries(storybookTranslations).forEach((pair) => {
                         if (pair[0].startsWith('style')) {
-                            var styleKey = pair[0].replace('style', '').toLowerCase();
-                            var label = el.querySelector('label[for="style-' + styleKey + '"]');
+                            const styleKey = pair[0].replace('style', '').toLowerCase();
+                            const label = el.querySelector('label[for="style-' + styleKey + '"]');
                             if (label) label.textContent = pair[1];
                         }
                     });
@@ -77,8 +85,8 @@ App.i18n = {
         });
 
         App.i18n.updateAllSelectOptions();
-        var subjectGroup = document.getElementById('subject-group');
-        var checkedSubject = subjectGroup ? subjectGroup.querySelector('input[name="subject"]:checked') : null;
+        const subjectGroup = document.getElementById('subject-group');
+        const checkedSubject = subjectGroup ? subjectGroup.querySelector('input[name="subject"]:checked') : null;
         if (checkedSubject) {
             App.i18n.updateTopicSelection(checkedSubject.value);
         }
@@ -92,17 +100,17 @@ App.i18n = {
         App.i18n.updateStorybookSummary(App.state.storybookFiles ? App.state.storybookFiles.length : 0);
         App.i18n.updateTutoringSummary(App.state.tutoringFiles ? App.state.tutoringFiles.length : 0);
 
-        var generateStoryBtn = document.getElementById('generate-story-btn');
-        var analyzeHomeworkBtn = document.getElementById('analyze-homework-btn');
-        var fileNameDisplay = document.getElementById('file-name-display');
+        const generateStoryBtn = document.getElementById('generate-story-btn');
+        const analyzeHomeworkBtn = document.getElementById('analyze-homework-btn');
+        const fileNameDisplay = document.getElementById('file-name-display');
 
         if (generateStoryBtn) generateStoryBtn.disabled = App.state.storybookFiles.length === 0;
         if (analyzeHomeworkBtn) analyzeHomeworkBtn.disabled = App.state.tutoringFiles.length === 0;
         if (fileNameDisplay) {
             if (App.state.tutoringFiles.length > 0) {
-                fileNameDisplay.textContent = App.state.tutoringFiles.map(function(file) { return file.name; }).join(', ');
+                fileNameDisplay.textContent = App.state.tutoringFiles.map((file) => file.name).join(', ');
             } else {
-                var noFile = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].tutoring && App.translations[App.state.currentLang].tutoring.noFileSelected) ||
+                const noFile = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].tutoring && App.translations[App.state.currentLang].tutoring.noFileSelected) ||
                     (App.translations['en'] && App.translations['en'].tutoring && App.translations['en'].tutoring.noFileSelected) ||
                     'No file selected';
                 fileNameDisplay.textContent = noFile;
@@ -118,28 +126,28 @@ App.i18n = {
         }
 
         // Ensure button texts are updated correctly
-        document.querySelectorAll('button[data-translate-key]').forEach(function(btn) {
-            var key = btn.dataset.translateKey;
-            var keys = key.split('.');
-            var translation = App.translations[lang];
-            try { for (var i = 0; i < keys.length; i++) { translation = translation[keys[i]]; } } catch(e) { translation = undefined; }
+        document.querySelectorAll('button[data-translate-key]').forEach((btn) => {
+            const key = btn.dataset.translateKey;
+            const keys = key.split('.');
+            let translation = App.translations[lang];
+            try { for (let i = 0; i < keys.length; i++) { translation = translation[keys[i]]; } } catch(e) { translation = undefined; }
             if (typeof translation === 'string') {
-                var textSpan = btn.querySelector('.btn-text');
+                const textSpan = btn.querySelector('.btn-text');
                 if (textSpan) { textSpan.textContent = translation; } else { btn.textContent = translation; }
             }
         });
 
         // Ensure select labels are updated correctly
-        document.querySelectorAll('label[data-translate-key]').forEach(function(lbl) {
-            var key = lbl.dataset.translateKey;
-            var keys = key.split('.');
-            var translation = App.translations[lang];
-            try { for (var i = 0; i < keys.length; i++) { translation = translation[keys[i]]; } } catch(e) { translation = undefined; }
+        document.querySelectorAll('label[data-translate-key]').forEach((lbl) => {
+            const key = lbl.dataset.translateKey;
+            const keys = key.split('.');
+            let translation = App.translations[lang];
+            try { for (let i = 0; i < keys.length; i++) { translation = translation[keys[i]]; } } catch(e) { translation = undefined; }
             if (typeof translation === 'string') { lbl.textContent = translation; }
         });
 
         // Notify registered callbacks
-        App.i18n._languageCallbacks.forEach(function(fn) { fn(lang); });
+        App.i18n._languageCallbacks.forEach((fn) => { fn(lang); });
     },
 
     // --- Localized text helpers ---
@@ -150,10 +158,10 @@ App.i18n = {
     },
 
     getDebateTranslation: function(path) {
-        var segments = path.split('.');
-        var node = App.translations[App.state.currentLang] && App.translations[App.state.currentLang].debateCoach;
-        var fallbackNode = App.translations['en'] && App.translations['en'].debateCoach;
-        for (var i = 0; i < segments.length; i++) {
+        const segments = path.split('.');
+        let node = App.translations[App.state.currentLang] && App.translations[App.state.currentLang].debateCoach;
+        let fallbackNode = App.translations['en'] && App.translations['en'].debateCoach;
+        for (let i = 0; i < segments.length; i++) {
             node = node && node[segments[i]];
             fallbackNode = fallbackNode && fallbackNode[segments[i]];
         }
@@ -162,21 +170,21 @@ App.i18n = {
 
     // --- File summary text helpers ---
     getStorybookSelectedText: function(count) {
-        var template = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].storybook && App.translations[App.state.currentLang].storybook.selectedCount) ||
+        const template = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].storybook && App.translations[App.state.currentLang].storybook.selectedCount) ||
             (App.translations['en'] && App.translations['en'].storybook && App.translations['en'].storybook.selectedCount) ||
             'Selected {count} file(s)';
         return template.replace('{count}', count);
     },
 
     getTutoringSelectedText: function(count) {
-        var template = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].tutoring && App.translations[App.state.currentLang].tutoring.selectedCount) ||
+        const template = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].tutoring && App.translations[App.state.currentLang].tutoring.selectedCount) ||
             (App.translations['en'] && App.translations['en'].tutoring && App.translations['en'].tutoring.selectedCount) ||
             'Selected {count} file(s)';
         return template.replace('{count}', count);
     },
 
     getDoctorSelectedText: function(count) {
-        var template = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].aiDoctor && App.translations[App.state.currentLang].aiDoctor.selectedCount) ||
+        const template = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].aiDoctor && App.translations[App.state.currentLang].aiDoctor.selectedCount) ||
             (App.translations['en'] && App.translations['en'].aiDoctor && App.translations['en'].aiDoctor.selectedCount) ||
             'Selected {count} photo(s)';
         return template.replace('{count}', count);
@@ -197,7 +205,7 @@ App.i18n = {
 
     // --- Summary update functions ---
     updateStorybookSummary: function(count) {
-        var storybookFileSummary = document.getElementById('storybook-file-summary');
+        const storybookFileSummary = document.getElementById('storybook-file-summary');
         if (!storybookFileSummary) return;
         if (count > 0) {
             storybookFileSummary.textContent = App.i18n.getStorybookSelectedText(count);
@@ -209,7 +217,7 @@ App.i18n = {
     },
 
     updateTutoringSummary: function(count) {
-        var tutoringFileSummary = document.getElementById('tutoring-file-summary');
+        const tutoringFileSummary = document.getElementById('tutoring-file-summary');
         if (!tutoringFileSummary) return;
         if (count > 0) {
             tutoringFileSummary.textContent = App.i18n.getTutoringSelectedText(count);
@@ -221,7 +229,7 @@ App.i18n = {
     },
 
     updateDoctorSummary: function(count) {
-        var aiDoctorFileSummary = document.getElementById('ai-doctor-file-summary');
+        const aiDoctorFileSummary = document.getElementById('ai-doctor-file-summary');
         if (!aiDoctorFileSummary) return;
         if (count > 0) {
             aiDoctorFileSummary.textContent = App.i18n.getDoctorSelectedText(count);
@@ -234,28 +242,28 @@ App.i18n = {
 
     // --- Select options updater ---
     updateAllSelectOptions: function() {
-        var langKey = App.state.currentLang;
-        var tutoringLevelSelect = document.getElementById('tutoring-level');
-        var tutoringSubjectSelect = document.getElementById('tutoring-subject');
-        var tutoringLanguageSelect = document.getElementById('tutoring-language');
-        var storybookLanguageSelect = document.getElementById('storybook-language');
-        var storybookAgeSelect = document.getElementById('storybook-age');
+        const langKey = App.state.currentLang;
+        const tutoringLevelSelect = document.getElementById('tutoring-level');
+        const tutoringSubjectSelect = document.getElementById('tutoring-subject');
+        const tutoringLanguageSelect = document.getElementById('tutoring-language');
+        const storybookLanguageSelect = document.getElementById('storybook-language');
+        const storybookAgeSelect = document.getElementById('storybook-age');
 
         // Tutoring Levels
         if (tutoringLevelSelect) {
-            tutoringLevelSelect.innerHTML = (App.data.tutoring_levels[langKey] || App.data.tutoring_levels['en']).map(function(level) {
+            tutoringLevelSelect.innerHTML = (App.data.tutoring_levels[langKey] || App.data.tutoring_levels['en']).map((level) => {
                 return '<option class="text-black">' + level + '</option>';
             }).join('');
         }
         // Tutoring Subjects
         if (tutoringSubjectSelect) {
-            tutoringSubjectSelect.innerHTML = (App.data.tutoring_subjects[langKey] || App.data.tutoring_subjects['en']).map(function(subject) {
+            tutoringSubjectSelect.innerHTML = (App.data.tutoring_subjects[langKey] || App.data.tutoring_subjects['en']).map((subject) => {
                 return '<option class="text-black">' + subject + '</option>';
             }).join('');
         }
         // Tutoring/Storybook languages
-        var langOptions = Object.keys(App.translations).map(function(key) {
-            var langName = new Intl.DisplayNames([langKey], {type: 'language'}).of(key) || key;
+        const langOptions = Object.keys(App.translations).map((key) => {
+            const langName = new Intl.DisplayNames([langKey], {type: 'language'}).of(key) || key;
             return '<option class="text-black" value="' + key + '">' + langName.charAt(0).toUpperCase() + langName.slice(1) + '</option>';
         }).join('');
         if (tutoringLanguageSelect) {
@@ -268,7 +276,7 @@ App.i18n = {
         }
         // Storybook Ages
         if (storybookAgeSelect) {
-            storybookAgeSelect.innerHTML = (App.data.storybook_ages[langKey] || App.data.storybook_ages['en']).map(function(age) {
+            storybookAgeSelect.innerHTML = (App.data.storybook_ages[langKey] || App.data.storybook_ages['en']).map((age) => {
                 return '<option class="text-black" value="' + age + '">' + age + '</option>';
             }).join('');
         }
@@ -276,12 +284,12 @@ App.i18n = {
 
     // --- Custom topic label sync ---
     syncCustomTopicOptionLabel: function() {
-        var topicSelect = document.getElementById('topic-select');
+        const topicSelect = document.getElementById('topic-select');
         if (!topicSelect) return;
-        var customOption = topicSelect.querySelector('option[value="__custom__"]');
+        const customOption = topicSelect.querySelector('option[value="__custom__"]');
         if (customOption) {
-            var customTopicInput = document.getElementById('custom-topic-input');
-            var customValue = customTopicInput ? customTopicInput.value.trim() : '';
+            const customTopicInput = document.getElementById('custom-topic-input');
+            const customValue = customTopicInput ? customTopicInput.value.trim() : '';
             customOption.textContent = customValue
                 ? App.i18n.getCustomTopicOptionText() + ' (' + customValue + ')'
                 : App.i18n.getCustomTopicOptionText();
@@ -290,14 +298,14 @@ App.i18n = {
 
     // --- Custom topic UI updater ---
     updateCustomTopicUI: function() {
-        var customTopicWrapper = document.getElementById('custom-topic-wrapper');
+        const customTopicWrapper = document.getElementById('custom-topic-wrapper');
         if (!customTopicWrapper) return;
-        var subjectGroup = document.getElementById('subject-group');
-        var topicSelect = document.getElementById('topic-select');
-        var subjectInput = subjectGroup ? subjectGroup.querySelector('input[name="subject"]:checked') : null;
-        var subject = subjectInput ? subjectInput.value : '';
-        var allowCustom = App.i18n.allowsCustomTopic(subject);
-        var isCustomSelected = topicSelect && topicSelect.value === '__custom__';
+        const subjectGroup = document.getElementById('subject-group');
+        const topicSelect = document.getElementById('topic-select');
+        const subjectInput = subjectGroup ? subjectGroup.querySelector('input[name="subject"]:checked') : null;
+        const subject = subjectInput ? subjectInput.value : '';
+        const allowCustom = App.i18n.allowsCustomTopic(subject);
+        const isCustomSelected = topicSelect && topicSelect.value === '__custom__';
         App.i18n.syncCustomTopicOptionLabel();
         customTopicWrapper.classList.toggle('hidden', !(allowCustom && isCustomSelected));
     },
@@ -309,14 +317,14 @@ App.i18n = {
 
     // --- Topic selection updater ---
     updateTopicSelection: function(subject) {
-        var topicSelect = document.getElementById('topic-select');
+        const topicSelect = document.getElementById('topic-select');
         if (!topicSelect) return;
-        var topicsMap = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].topics) || App.translations['en'].topics;
-        var topics = topicsMap[subject] || [];
-        var previousValue = topicSelect.value;
-        var includeCustom = App.i18n.allowsCustomTopic(subject);
-        var options = topics.slice();
-        topicSelect.innerHTML = options.map(function(topic) {
+        const topicsMap = (App.translations[App.state.currentLang] && App.translations[App.state.currentLang].topics) || App.translations['en'].topics;
+        const topics = topicsMap[subject] || [];
+        const previousValue = topicSelect.value;
+        const includeCustom = App.i18n.allowsCustomTopic(subject);
+        const options = topics.slice();
+        topicSelect.innerHTML = options.map((topic) => {
             return '<option class="text-black">' + topic + '</option>';
         }).join('') + (includeCustom ? '<option class="text-black" value="__custom__">' + App.i18n.getCustomTopicOptionText() + '</option>' : '');
 

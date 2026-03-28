@@ -4,29 +4,29 @@ App.views = App.views || {};
 App.views.tutoring = {
 
     renderTutoringVocabulary: function(items) {
-        var tutoringVocabCard = document.getElementById('tutoring-vocab-card');
-        var tutoringVocabContainer = document.getElementById('tutoring-vocabulary-container');
+        const tutoringVocabCard = document.getElementById('tutoring-vocab-card');
+        const tutoringVocabContainer = document.getElementById('tutoring-vocabulary-container');
         if (!tutoringVocabCard || !tutoringVocabContainer) return;
         if (!Array.isArray(items) || items.length === 0) {
             tutoringVocabContainer.innerHTML = '';
             tutoringVocabCard.classList.add('hidden');
             return;
         }
-        var phoneticLabel = App.translations[App.state.currentLang]?.phoneticLabel || 'Phonetic';
-        var exampleLabel = App.translations[App.state.currentLang]?.exampleLabel || 'Example';
-        tutoringVocabContainer.innerHTML = items.map(function(item, index) {
-            var wordText = typeof item?.word === 'string' && item.word.trim() ? item.word.trim() : 'Word ' + (index + 1);
-            var meaningText = typeof item?.meaning === 'string' ? item.meaning.trim() : '';
-            var phoneticText = typeof item?.phonetic === 'string' ? item.phonetic.trim() : '';
-            var exampleText = typeof item?.example === 'string' ? item.example.trim() : '';
-            var wordSpeechAttr = App.utils.encodeForDataAttr(wordText);
-            var exampleSpeechAttr = exampleText ? App.utils.encodeForDataAttr(exampleText) : '';
-            var wordButton = wordSpeechAttr ? '\n' +
+        const phoneticLabel = App.translations[App.state.currentLang]?.phoneticLabel || 'Phonetic';
+        const exampleLabel = App.translations[App.state.currentLang]?.exampleLabel || 'Example';
+        tutoringVocabContainer.innerHTML = items.map((item, index) => {
+            const wordText = typeof item?.word === 'string' && item.word.trim() ? item.word.trim() : 'Word ' + (index + 1);
+            const meaningText = typeof item?.meaning === 'string' ? item.meaning.trim() : '';
+            const phoneticText = typeof item?.phonetic === 'string' ? item.phonetic.trim() : '';
+            const exampleText = typeof item?.example === 'string' ? item.example.trim() : '';
+            const wordSpeechAttr = App.utils.encodeForDataAttr(wordText);
+            const exampleSpeechAttr = exampleText ? App.utils.encodeForDataAttr(exampleText) : '';
+            const wordButton = wordSpeechAttr ? '\n' +
                 '    <button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + wordSpeechAttr + '" title="Play word audio" aria-label="Play word audio">\n' +
                 '        <i class="fas fa-play"></i>\n' +
                 '        <div class="audio-loader"></div>\n' +
                 '    </button>' : '';
-            var exampleButton = exampleSpeechAttr ? '\n' +
+            const exampleButton = exampleSpeechAttr ? '\n' +
                 '    <button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + exampleSpeechAttr + '" title="Play example audio" aria-label="Play example audio">\n' +
                 '        <i class="fas fa-play"></i>\n' +
                 '        <div class="audio-loader"></div>\n' +
@@ -49,15 +49,15 @@ App.views.tutoring = {
     },
 
     analyzeHomework: async function() {
-        var analyzeHomeworkBtn = document.getElementById('analyze-homework-btn');
-        var tutoringErrorMessage = document.getElementById('tutoring-error-message');
-        var tutoringResultsView = document.getElementById('tutoring-results-view');
-        var tutoringLevelSelect = document.getElementById('tutoring-level');
-        var tutoringSubjectSelect = document.getElementById('tutoring-subject');
-        var tutoringLanguageSelect = document.getElementById('tutoring-language');
-        var tutoringCustomSubjectInput = document.getElementById('tutoring-custom-subject-input');
-        var keyConceptsContainer = document.getElementById('key-concepts-container');
-        var problemAnalysisContainer = document.getElementById('problem-analysis-container');
+        const analyzeHomeworkBtn = document.getElementById('analyze-homework-btn');
+        const tutoringErrorMessage = document.getElementById('tutoring-error-message');
+        const tutoringResultsView = document.getElementById('tutoring-results-view');
+        const tutoringLevelSelect = document.getElementById('tutoring-level');
+        const tutoringSubjectSelect = document.getElementById('tutoring-subject');
+        const tutoringLanguageSelect = document.getElementById('tutoring-language');
+        const tutoringCustomSubjectInput = document.getElementById('tutoring-custom-subject-input');
+        const keyConceptsContainer = document.getElementById('key-concepts-container');
+        const problemAnalysisContainer = document.getElementById('problem-analysis-container');
 
         App.utils.setLoading(analyzeHomeworkBtn, true);
         tutoringErrorMessage.classList.add('hidden');
@@ -65,18 +65,18 @@ App.views.tutoring = {
 
         try {
             if (!App.state.tutoringFiles.length) {
-                var noFileMessage = App.translations[App.state.currentLang]?.tutoring?.noFileError || App.translations['en']?.tutoring?.noFileError || 'Please upload at least one file first.';
+                const noFileMessage = App.translations[App.state.currentLang]?.tutoring?.noFileError || App.translations['en']?.tutoring?.noFileError || 'Please upload at least one file first.';
                 throw new Error(noFileMessage);
             }
-            var primaryFile = App.state.tutoringFiles[0];
-            var fileCount = App.state.tutoringFiles.length;
-            var base64Image = await App.utils.base64FromFile(primaryFile);
-            var level = tutoringLevelSelect.value;
-            var subject = tutoringSubjectSelect.value;
+            const primaryFile = App.state.tutoringFiles[0];
+            const fileCount = App.state.tutoringFiles.length;
+            const base64Image = await App.utils.base64FromFile(primaryFile);
+            const level = tutoringLevelSelect.value;
+            let subject = tutoringSubjectSelect.value;
             if (subject === 'Other' || subject === '\u5176\u4ED6' || subject === 'Kh\u00E1c' || subject === '\u305D\u306E\u4ED6') {
                 subject = tutoringCustomSubjectInput.value || 'Custom';
             }
-            var language = tutoringLanguageSelect.options[tutoringLanguageSelect.selectedIndex].text;
+            const language = tutoringLanguageSelect.options[tutoringLanguageSelect.selectedIndex].text;
 
             // Log user behavior (guarded)
             if (typeof logUserBehavior === 'function') {
@@ -88,8 +88,8 @@ App.views.tutoring = {
                 });
             }
 
-            var systemPrompt = 'You are an AI tutor analyzing homework. Output a valid JSON object. All property names must be double-quoted. Output ONLY the JSON object.';
-            var prompt = 'Analyze this homework image' + (fileCount > 1 ? ' (1st of ' + fileCount + ' uploaded files)' : '') + '. The student\'s level is ' + level + ', the subject is ' + subject + '. Provide all text in ' + language + '.\n' +
+            const systemPrompt = 'You are an AI tutor analyzing homework. Output a valid JSON object. All property names must be double-quoted. Output ONLY the JSON object.';
+            const prompt = 'Analyze this homework image' + (fileCount > 1 ? ' (1st of ' + fileCount + ' uploaded files)' : '') + '. The student\'s level is ' + level + ', the subject is ' + subject + '. Provide all text in ' + language + '.\n' +
 '1. Identify the key concepts being tested in the homework.\n' +
 '2. Provide a step-by-step analysis for each distinct problem you can see.\n' +
 '3. Extract exactly six high-impact vocabulary words that appear in, or are essential to, the assignment. For each vocabulary entry, include:\n' +
@@ -109,30 +109,30 @@ App.views.tutoring = {
 '        { "word": "term", "meaning": "short meaning", "phonetic": "IPA", "example": "example sentence" }\n' +
 '    ]\n' +
 '}';
-            var rawJsonResponse = await App.api.callGeminiAPI(prompt, systemPrompt, base64Image);
-            var cleanedJson = rawJsonResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-            var firstBrace = cleanedJson.indexOf('{');
-            var lastBrace = cleanedJson.lastIndexOf('}');
+            const rawJsonResponse = await App.api.callGeminiAPI(prompt, systemPrompt, base64Image);
+            let cleanedJson = rawJsonResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+            const firstBrace = cleanedJson.indexOf('{');
+            const lastBrace = cleanedJson.lastIndexOf('}');
             if (firstBrace !== -1 && lastBrace > firstBrace) {
                 cleanedJson = cleanedJson.substring(firstBrace, lastBrace + 1);
             }
-            var results;
+            let results;
             try {
                 results = JSON.parse(cleanedJson);
             } catch (parseError) {
                 console.error("Failed to parse homework JSON:", parseError, "Raw response:", rawJsonResponse, "Cleaned JSON:", cleanedJson);
                 throw new Error('Invalid JSON received from API: ' + parseError.message);
             }
-            var keyConcepts = Array.isArray(results.keyConcepts) ? results.keyConcepts : [];
-            var problemAnalysis = Array.isArray(results.problemAnalysis) ? results.problemAnalysis : [];
-            var vocabularyItems = Array.isArray(results.vocabulary) ? results.vocabulary.slice(0, 6) : [];
+            const keyConcepts = Array.isArray(results.keyConcepts) ? results.keyConcepts : [];
+            const problemAnalysis = Array.isArray(results.problemAnalysis) ? results.problemAnalysis : [];
+            const vocabularyItems = Array.isArray(results.vocabulary) ? results.vocabulary.slice(0, 6) : [];
 
-            var keyConceptsHtml = keyConcepts
-                .map(function(concept) { return typeof concept === 'string' ? concept.trim() : ''; })
+            const keyConceptsHtml = keyConcepts
+                .map((concept) => typeof concept === 'string' ? concept.trim() : '')
                 .filter(Boolean)
-                .map(function(concept) {
-                    var speechAttr = App.utils.encodeForDataAttr(concept);
-                    var buttonHtml = speechAttr ? '\n' +
+                .map((concept) => {
+                    const speechAttr = App.utils.encodeForDataAttr(concept);
+                    const buttonHtml = speechAttr ? '\n' +
                         '<button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + speechAttr + '">\n' +
                         '    <i class="fas fa-play"></i>\n' +
                         '    <div class="audio-loader"></div>\n' +
@@ -145,15 +145,15 @@ App.views.tutoring = {
                 }).join('');
             keyConceptsContainer.innerHTML = keyConceptsHtml;
 
-            var problemAnalysisHtml = problemAnalysis.map(function(prob, index) {
-                var problemTitle = typeof prob?.problem === 'string' && prob.problem.trim() ? prob.problem.trim() : 'Problem ' + (index + 1);
-                var solutionText = typeof prob?.solution === 'string' ? prob.solution : '';
-                var feedbackText = typeof prob?.feedback === 'string' ? prob.feedback : '';
-                var speechParts = [problemTitle, solutionText, feedbackText].map(App.utils.normalizeSpeechText).filter(Boolean);
-                var speechAttr = speechParts.length ? App.utils.encodeForDataAttr(speechParts.join('. ')) : '';
-                var solutionHtml = solutionText ? '<p class="mt-2 whitespace-pre-wrap">' + solutionText + '</p>' : '';
-                var feedbackHtml = feedbackText ? '<p class="mt-2 text-sm italic text-indigo-200">' + feedbackText + '</p>' : '';
-                var buttonHtml = speechAttr ? '\n' +
+            const problemAnalysisHtml = problemAnalysis.map((prob, index) => {
+                const problemTitle = typeof prob?.problem === 'string' && prob.problem.trim() ? prob.problem.trim() : 'Problem ' + (index + 1);
+                const solutionText = typeof prob?.solution === 'string' ? prob.solution : '';
+                const feedbackText = typeof prob?.feedback === 'string' ? prob.feedback : '';
+                const speechParts = [problemTitle, solutionText, feedbackText].map(App.utils.normalizeSpeechText).filter(Boolean);
+                const speechAttr = speechParts.length ? App.utils.encodeForDataAttr(speechParts.join('. ')) : '';
+                const solutionHtml = solutionText ? '<p class="mt-2 whitespace-pre-wrap">' + solutionText + '</p>' : '';
+                const feedbackHtml = feedbackText ? '<p class="mt-2 text-sm italic text-indigo-200">' + feedbackText + '</p>' : '';
+                const buttonHtml = speechAttr ? '\n' +
                     '     <button class="play-audio-btn flex-shrink-0 ml-4" data-text-to-speak="' + speechAttr + '">\n' +
                     '         <i class="fas fa-play"></i>\n' +
                     '         <div class="audio-loader"></div>\n' +
@@ -182,7 +182,7 @@ App.views.tutoring = {
                     subject: subject,
                     language: language,
                     analysis_content: results,
-                    file_urls: App.state.tutoringFiles.map(function(f) { return f.name; })
+                    file_urls: App.state.tutoringFiles.map((f) => f.name)
                 });
             }
 

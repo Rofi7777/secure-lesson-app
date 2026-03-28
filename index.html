@@ -15,6 +15,8 @@
             font-family: 'Inter', sans-serif;
             background-color: #0f172a;
         }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
         .app-bg {
             background: linear-gradient(135deg, #4f46e5, #a855f7, #ec4899);
             min-height: 100vh;
@@ -439,12 +441,12 @@
         </header>
 
         <!-- New Main Navigation -->
-        <nav id="main-nav" class="mb-8 flex flex-wrap justify-center p-2 bg-black/10 backdrop-blur-sm rounded-xl border border-white/20">
-            <button data-view="platform-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center active" data-translate-key="nav.learningPlatform">多語言學習平台</button>
-            <button data-view="tutoring-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.studentTutoring">學生課程輔導</button>
-            <button data-view="storybook-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.storybookReading">兒童繪本朗讀</button>
-            <button data-view="ai-tutor-view" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center" data-translate-key="nav.aiTutor">AI 助教</button>
-            <button data-view="admin-view" id="admin-nav-btn" class="nav-btn flex-1 py-3 px-4 rounded-lg text-white font-medium text-center hidden" style="background-color: rgba(239, 68, 68, 0.3); border: 1px solid rgba(239, 68, 68, 0.5);">
+        <nav id="main-nav" class="mb-8 flex overflow-x-auto gap-2 p-2 bg-black/10 backdrop-blur-sm rounded-xl border border-white/20 scrollbar-hide snap-x snap-mandatory">
+            <button data-view="platform-view" class="nav-btn snap-start whitespace-nowrap flex-shrink-0 py-3 px-4 rounded-lg text-white font-medium text-center active text-sm md:text-base" data-translate-key="nav.learningPlatform">多語言學習平台</button>
+            <button data-view="tutoring-view" class="nav-btn snap-start whitespace-nowrap flex-shrink-0 py-3 px-4 rounded-lg text-white font-medium text-center text-sm md:text-base" data-translate-key="nav.studentTutoring">學生課程輔導</button>
+            <button data-view="storybook-view" class="nav-btn snap-start whitespace-nowrap flex-shrink-0 py-3 px-4 rounded-lg text-white font-medium text-center text-sm md:text-base" data-translate-key="nav.storybookReading">兒童繪本朗讀</button>
+            <button data-view="ai-tutor-view" class="nav-btn snap-start whitespace-nowrap flex-shrink-0 py-3 px-4 rounded-lg text-white font-medium text-center text-sm md:text-base" data-translate-key="nav.aiTutor">AI 助教</button>
+            <button data-view="admin-view" id="admin-nav-btn" class="nav-btn snap-start whitespace-nowrap flex-shrink-0 py-3 px-4 rounded-lg text-white font-medium text-center text-sm md:text-base hidden" style="background-color: rgba(239, 68, 68, 0.3); border: 1px solid rgba(239, 68, 68, 0.5);">
                 <i class="fas fa-shield-alt mr-2"></i>管理員
             </button>
         </nav>

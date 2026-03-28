@@ -24,17 +24,17 @@ App.views.platform = {
     },
 
     cacheGeneratedAudio: function(key, blob) {
-        var existing = App.state.generatedAudioCache.get(key);
+        const existing = App.state.generatedAudioCache.get(key);
         if (existing && existing.url) {
             URL.revokeObjectURL(existing.url);
         }
-        var url = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
         App.state.generatedAudioCache.set(key, { blob: blob, url: url, updatedAt: Date.now() });
         return url;
     },
 
     ensureDownloadButton: function(button) {
-        var downloadBtn = button.nextElementSibling;
+        let downloadBtn = button.nextElementSibling;
         if (!downloadBtn || !downloadBtn.classList.contains('download-audio-btn')) {
             downloadBtn = document.createElement('button');
             downloadBtn.type = 'button';
@@ -50,7 +50,7 @@ App.views.platform = {
 
     showDownloadButton: function(button) {
         if (!button || !button.isConnected) return;
-        var downloadBtn = App.views.platform.ensureDownloadButton(button);
+        const downloadBtn = App.views.platform.ensureDownloadButton(button);
         downloadBtn.classList.remove('hidden');
     },
 
@@ -65,14 +65,14 @@ App.views.platform = {
     },
 
     triggerAudioDownload: function(downloadBtn) {
-        var key = downloadBtn.dataset.downloadKey;
-        var cache = App.state.generatedAudioCache.get(key);
-        var errorDisplay = App.views.platform.getAudioErrorDisplay(downloadBtn);
+        const key = downloadBtn.dataset.downloadKey;
+        const cache = App.state.generatedAudioCache.get(key);
+        const errorDisplay = App.views.platform.getAudioErrorDisplay(downloadBtn);
         if (!cache) {
             App.utils.displayError(errorDisplay, 'Audio file not ready yet. Please play it once before downloading.');
             return;
         }
-        var link = document.createElement('a');
+        const link = document.createElement('a');
         link.href = cache.url;
         link.download = 'tts-' + Date.now() + '.wav';
         document.body.appendChild(link);
@@ -84,41 +84,41 @@ App.views.platform = {
 
     splitTextIntoDialogueSentences: function(text) {
         if (!text) return [];
-        var normalized = text.replace(/\r/g, '\n').trim();
+        const normalized = text.replace(/\r/g, '\n').trim();
         if (!normalized) return [];
-        var sentences = normalized.match(/[^。！？!?…]+[。！？!?…]?/gu) || [];
-        sentences = sentences.map(function(s) { return s.trim(); }).filter(Boolean);
+        let sentences = normalized.match(/[^。！？!?…]+[。！？!?…]?/gu) || [];
+        sentences = sentences.map((s) => s.trim()).filter(Boolean);
         if (sentences.length < 2) {
-            var byLine = normalized.split(/\n+/).map(function(s) { return s.trim(); }).filter(Boolean);
+            const byLine = normalized.split(/\n+/).map((s) => s.trim()).filter(Boolean);
             if (byLine.length > sentences.length) sentences = byLine;
         }
         if (sentences.length < 2 && normalized.length > 40) {
-            var mid = Math.floor(normalized.length / 2);
-            var firstHalf = normalized.slice(0, mid).trim();
-            var secondHalf = normalized.slice(mid).trim();
+            const mid = Math.floor(normalized.length / 2);
+            const firstHalf = normalized.slice(0, mid).trim();
+            const secondHalf = normalized.slice(mid).trim();
             sentences = [firstHalf, secondHalf].filter(Boolean);
         }
         return sentences.length ? sentences : [normalized];
     },
 
     generateDialogueAudio: async function(text, lang) {
-        var sentences = App.views.platform.splitTextIntoDialogueSentences(text);
-        var voiceOrder = ['female', 'male'];
-        var speechProfile = App.utils.getLessonSpeechProfile(lang);
-        var localeVoiceLabels = App.translations[App.state.currentLang]?.voiceLabels || {};
-        var voiceProfiles = App.config.voiceProfiles;
-        var segments = sentences.map(function(sentence, idx) {
-            var voiceKey = voiceOrder[idx % voiceOrder.length];
-            var voiceName = voiceProfiles[voiceKey] || voiceProfiles.default;
-            var labelPrefix = localeVoiceLabels[voiceKey] ? (localeVoiceLabels[voiceKey] + '\uFF1A') : '';
+        const sentences = App.views.platform.splitTextIntoDialogueSentences(text);
+        const voiceOrder = ['female', 'male'];
+        const speechProfile = App.utils.getLessonSpeechProfile(lang);
+        const localeVoiceLabels = App.translations[App.state.currentLang]?.voiceLabels || {};
+        const voiceProfiles = App.config.voiceProfiles;
+        const segments = sentences.map((sentence, idx) => {
+            const voiceKey = voiceOrder[idx % voiceOrder.length];
+            const voiceName = voiceProfiles[voiceKey] || voiceProfiles.default;
+            const labelPrefix = localeVoiceLabels[voiceKey] ? (localeVoiceLabels[voiceKey] + '\uFF1A') : '';
             return {
                 text: labelPrefix + sentence,
                 voiceName: voiceName
             };
         });
-        var blobs = [];
-        for (var i = 0; i < segments.length; i++) {
-            var segmentBlob = await App.api.callTTSAPI(segments[i].text, null, { speechProfile: speechProfile, voiceName: segments[i].voiceName });
+        const blobs = [];
+        for (let i = 0; i < segments.length; i++) {
+            const segmentBlob = await App.api.callTTSAPI(segments[i].text, null, { speechProfile: speechProfile, voiceName: segments[i].voiceName });
             blobs.push(segmentBlob);
         }
         return App.utils.concatWavBlobs(blobs);
@@ -128,12 +128,12 @@ App.views.platform = {
 
     createVocabularyHtmlForLang: function(targetLang) {
         if (!App.state.currentLesson || !App.state.currentLesson.vocabulary) return '';
-        var lang = targetLang || App.state.currentLang;
-        return App.state.currentLesson.vocabulary.map(function(item) {
-            var translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.word;
-            var phoneticHTML = item.phonetic ? '<p class="text-sm text-cyan-300">/<span data-translate-key="phoneticLabel">' + App.translations[lang].phoneticLabel + '</span>: ' + item.phonetic + '/</p>' : '';
+        const lang = targetLang || App.state.currentLang;
+        return App.state.currentLesson.vocabulary.map((item) => {
+            const translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.word;
+            const phoneticHTML = item.phonetic ? '<p class="text-sm text-cyan-300">/<span data-translate-key="phoneticLabel">' + App.translations[lang].phoneticLabel + '</span>: ' + item.phonetic + '/</p>' : '';
 
-            var exampleSentence = (item.example_sentence && typeof item.example_sentence === 'object' && item.example_sentence[targetLang])
+            const exampleSentence = (item.example_sentence && typeof item.example_sentence === 'object' && item.example_sentence[targetLang])
                 ? item.example_sentence[targetLang]
                 : (item.example_sentence && typeof item.example_sentence === 'object' && item.example_sentence['en'])
                 ? item.example_sentence['en']
@@ -141,10 +141,10 @@ App.views.platform = {
                 ? item.example_sentence
                 : '';
 
-            var exampleHTML = exampleSentence ? '<p class="text-sm italic mt-2 text-indigo-200">"<span data-translate-key="exampleLabel">' + App.translations[lang].exampleLabel + '</span>: ' + exampleSentence + '"</p>' : '';
+            const exampleHTML = exampleSentence ? '<p class="text-sm italic mt-2 text-indigo-200">"<span data-translate-key="exampleLabel">' + App.translations[lang].exampleLabel + '</span>: ' + exampleSentence + '"</p>' : '';
 
-            var wordSpeechAttr = App.utils.encodeForDataAttr(item.word || translationText);
-            var vocabAudioButton = wordSpeechAttr ? '\n' +
+            const wordSpeechAttr = App.utils.encodeForDataAttr(item.word || translationText);
+            const vocabAudioButton = wordSpeechAttr ? '\n' +
                 '    <button class="play-audio-btn flex-shrink-0 ml-4" data-text-to-speak="' + wordSpeechAttr + '" data-lesson-lang="' + lang + '">\n' +
                 '        <i class="fas fa-play"></i>\n' +
                 '        <div class="audio-loader"></div>\n' +
@@ -165,11 +165,11 @@ App.views.platform = {
 
     createPhrasesHtmlForLang: function(targetLang) {
         if (!App.state.currentLesson || !App.state.currentLesson.phrases) return '';
-        var lang = targetLang || App.state.currentLang;
-        return App.state.currentLesson.phrases.map(function(item) {
-            var translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.phrase;
-            var phraseSpeechAttr = App.utils.encodeForDataAttr(item.phrase || translationText);
-            var phraseAudioButton = phraseSpeechAttr ? '\n' +
+        const lang = targetLang || App.state.currentLang;
+        return App.state.currentLesson.phrases.map((item) => {
+            const translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.phrase;
+            const phraseSpeechAttr = App.utils.encodeForDataAttr(item.phrase || translationText);
+            const phraseAudioButton = phraseSpeechAttr ? '\n' +
                 '    <button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + phraseSpeechAttr + '" data-lesson-lang="' + lang + '">\n' +
                 '        <i class="fas fa-play"></i>\n' +
                 '        <div class="audio-loader"></div>\n' +
@@ -189,26 +189,26 @@ App.views.platform = {
 
     renderLesson: function() {
         if (!App.state.currentLesson) return;
-        var lessonContainer = document.getElementById('lesson-container');
-        var topicSelect = document.getElementById('topic-select');
-        var customTopicInput = document.getElementById('custom-topic-input');
+        const lessonContainer = document.getElementById('lesson-container');
+        const topicSelect = document.getElementById('topic-select');
+        const customTopicInput = document.getElementById('custom-topic-input');
 
-        var lang = document.getElementById('lesson-lang-tabs')?.querySelector('.active')?.dataset.lang || App.state.currentLang;
-        var selectedTopicName = App.state.currentLesson.selectedTopicName || (topicSelect.value === '__custom__' ? (customTopicInput?.value.trim() || App.views.platform._getCustomTopicOptionText()) : topicSelect.value);
+        const lang = document.getElementById('lesson-lang-tabs')?.querySelector('.active')?.dataset.lang || App.state.currentLang;
+        const selectedTopicName = App.state.currentLesson.selectedTopicName || (topicSelect.value === '__custom__' ? (customTopicInput?.value.trim() || App.views.platform._getCustomTopicOptionText()) : topicSelect.value);
 
-        var explanationLangTabsHTML = Object.entries(App.translations[App.state.currentLang].lessonLangTabs).map(function(entry) {
-            var key = entry[0], value = entry[1];
+        const explanationLangTabsHTML = Object.entries(App.translations[App.state.currentLang].lessonLangTabs).map((entry) => {
+            const key = entry[0], value = entry[1];
             return '<button class="lesson-lang-btn px-3 py-1 rounded-md text-sm ' + (key === App.state.currentLang ? 'active' : '') + '" data-lang="' + key + '">' + value + '</button>';
         }).join('');
 
-        var isDialogueLesson = App.state.currentLessonType === '\u96D9\u4EBA\u535A\u5BA2';
-        var voiceVariants = isDialogueLesson ? ['dialogue'] : ['default'];
-        var voiceLabels = App.translations[App.state.currentLang].voiceLabels || {};
+        const isDialogueLesson = App.state.currentLessonType === '\u96D9\u4EBA\u535A\u5BA2';
+        const voiceVariants = isDialogueLesson ? ['dialogue'] : ['default'];
+        const voiceLabels = App.translations[App.state.currentLang].voiceLabels || {};
 
-        var explanationAudioButtonsHTML = Object.entries(App.translations[App.state.currentLang].lessonLangTabs).map(function(entry) {
-            var key = entry[0], value = entry[1];
-            return voiceVariants.map(function(voiceType) {
-                var template;
+        const explanationAudioButtonsHTML = Object.entries(App.translations[App.state.currentLang].lessonLangTabs).map((entry) => {
+            const key = entry[0], value = entry[1];
+            return voiceVariants.map((voiceType) => {
+                let template;
                 if (voiceType === 'dialogue') {
                     template = App.translations[App.state.currentLang].genDialogueAudio || App.translations[App.state.currentLang].genAudio;
                 } else if (voiceType === 'default') {
@@ -216,7 +216,7 @@ App.views.platform = {
                 } else {
                     template = App.translations[App.state.currentLang].genAudioVariant || App.translations[App.state.currentLang].genAudio;
                 }
-                var buttonText = template.replace('{lang}', value);
+                const buttonText = template.replace('{lang}', value);
                 if (buttonText.includes('{voice}')) {
                     buttonText = buttonText.replace('{voice}', voiceLabels?.[voiceType] || voiceType);
                 } else if (voiceType !== 'default' && voiceType !== 'dialogue') {
@@ -230,17 +230,17 @@ App.views.platform = {
             }).join('');
         }).join('');
 
-        var explanationAudioSectionHTML = Object.entries(App.translations[App.state.currentLang].lessonLangTabs).map(function(entry) {
-            var key = entry[0], value = entry[1];
-            return voiceVariants.map(function(voiceType) {
-                var downloadTemplate = App.translations[App.state.currentLang].downloadAudio;
+        const explanationAudioSectionHTML = Object.entries(App.translations[App.state.currentLang].lessonLangTabs).map((entry) => {
+            const key = entry[0], value = entry[1];
+            return voiceVariants.map((voiceType) => {
+                let downloadTemplate = App.translations[App.state.currentLang].downloadAudio;
                 if (voiceType === 'dialogue') {
                     downloadTemplate = App.translations[App.state.currentLang].downloadDialogueAudio || downloadTemplate;
                 }
-                var downloadText = downloadTemplate.replace('{lang}', value);
-                var voiceBadge = '';
+                const downloadText = downloadTemplate.replace('{lang}', value);
+                let voiceBadge = '';
                 if (voiceType === 'dialogue') {
-                    var badgeText = App.translations[App.state.currentLang].dialogueBadge || 'Dialogue';
+                    const badgeText = App.translations[App.state.currentLang].dialogueBadge || 'Dialogue';
                     voiceBadge = '<span class="text-xs uppercase tracking-wide text-indigo-200 font-semibold">' + badgeText + '</span>';
                 } else if (voiceType !== 'default') {
                     voiceBadge = '<span class="text-xs uppercase tracking-wide text-indigo-200 font-semibold">' + (voiceLabels?.[voiceType] || voiceType) + '</span>';
@@ -289,11 +289,11 @@ App.views.platform = {
             ) : '') +
             '</div>';
 
-        var lessonImage = document.getElementById('lesson-image');
+        const lessonImage = document.getElementById('lesson-image');
         if (lessonImage) {
-            lessonImage.addEventListener('click', function() {
-                var modalImage = document.getElementById('modal-image');
-                var imageModal = document.getElementById('image-modal');
+            lessonImage.addEventListener('click', () => {
+                const modalImage = document.getElementById('modal-image');
+                const imageModal = document.getElementById('image-modal');
                 if (modalImage) modalImage.src = lessonImage.src;
                 if (imageModal) {
                     imageModal.classList.remove('hidden');
@@ -306,11 +306,11 @@ App.views.platform = {
     // --- Generate lesson ---
 
     generateLesson: async function() {
-        var generateLessonBtn = document.getElementById('generate-lesson-btn');
-        var errorMessage = document.getElementById('error-message');
-        var lessonContainer = document.getElementById('lesson-container');
-        var topicSelect = document.getElementById('topic-select');
-        var customTopicInput = document.getElementById('custom-topic-input');
+        const generateLessonBtn = document.getElementById('generate-lesson-btn');
+        const errorMessage = document.getElementById('error-message');
+        const lessonContainer = document.getElementById('lesson-container');
+        const topicSelect = document.getElementById('topic-select');
+        const customTopicInput = document.getElementById('custom-topic-input');
 
         App.utils.setLoading(generateLessonBtn, true);
         errorMessage.classList.add('hidden');
@@ -319,23 +319,23 @@ App.views.platform = {
         App.state.explanationAudioBlobs = {};
 
         try {
-            var age = document.querySelector('input[name="age"]:checked').value;
-            var subject = document.querySelector('input[name="subject"]:checked').value;
-            var lessonType = document.querySelector('input[name="lesson-type"]:checked').value;
+            const age = document.querySelector('input[name="age"]:checked').value;
+            const subject = document.querySelector('input[name="subject"]:checked').value;
+            const lessonType = document.querySelector('input[name="lesson-type"]:checked').value;
             App.state.currentLessonType = lessonType;
-            var topicValue = topicSelect.value;
-            var topic = topicValue;
+            const topicValue = topicSelect.value;
+            let topic = topicValue;
             if (topicValue === '__custom__') {
-                var customValue = customTopicInput?.value.trim();
+                const customValue = customTopicInput?.value.trim();
                 if (!customValue) {
                     throw new Error(App.views.platform._getCustomTopicErrorText());
                 }
                 topic = customValue;
             }
-            var langName = new Intl.DisplayNames(['en'], {type: 'language'}).of(subject.toLowerCase().includes('english') ? 'en' : App.state.currentLang);
+            const langName = new Intl.DisplayNames(['en'], {type: 'language'}).of(subject.toLowerCase().includes('english') ? 'en' : App.state.currentLang);
 
-            var systemPrompt = 'You are an expert curriculum designer. Your task is to generate a mini-lesson as a single, valid JSON object. The lesson is for a ' + age + ' old student, the format is "' + lessonType + '". All property names in the JSON must be enclosed in double quotes. Output ONLY the JSON object.';
-            var userPrompt = 'Generate a mini-lesson about "' + topic + '" in the subject of ' + subject + '. The main learning language for this lesson is ' + langName + '.\n' +
+            const systemPrompt = 'You are an expert curriculum designer. Your task is to generate a mini-lesson as a single, valid JSON object. The lesson is for a ' + age + ' old student, the format is "' + lessonType + '". All property names in the JSON must be enclosed in double quotes. Output ONLY the JSON object.';
+            const userPrompt = 'Generate a mini-lesson about "' + topic + '" in the subject of ' + subject + '. The main learning language for this lesson is ' + langName + '.\n' +
 'The lesson must include:\n' +
 '1.  An "explanation" paragraph about the topic, tailored to the lesson type "' + lessonType + '". **This explanation must be detailed and between 500 and 600 words.** Provide this explanation in an object with four language versions: Traditional Chinese (\u7E41\u9AD4\u4E2D\u6587), English, Vietnamese (Ti\u1EBFng Vi\u1EC7t), and Japanese (\u65E5\u672C\u8A9E).\n' +
 '2.  If the lesson type is NOT "AI\u63D0\u554F", include a list of 5-7 core "vocabulary" words. The "word" field must be in the main learning language (' + langName + '). For each word:\n' +
@@ -357,10 +357,10 @@ App.views.platform = {
 '  "image_prompt": "..."\n' +
 '}';
 
-            var rawJsonResponse = await App.api.callGeminiAPI(userPrompt, systemPrompt);
-            var cleanedJson = rawJsonResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-            var firstBrace = cleanedJson.indexOf('{');
-            var lastBrace = cleanedJson.lastIndexOf('}');
+            const rawJsonResponse = await App.api.callGeminiAPI(userPrompt, systemPrompt);
+            let cleanedJson = rawJsonResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+            const firstBrace = cleanedJson.indexOf('{');
+            const lastBrace = cleanedJson.lastIndexOf('}');
             if (firstBrace !== -1 && lastBrace > firstBrace) {
                 cleanedJson = cleanedJson.substring(firstBrace, lastBrace + 1);
             }
@@ -402,22 +402,22 @@ App.views.platform = {
     // --- Play audio click handler ---
 
     playAudio: async function(e) {
-        var button = e.target.closest('.play-audio-btn');
+        const button = e.target.closest('.play-audio-btn');
         if (!button) return;
-        var textToSpeak = button.dataset.textToSpeak;
+        const textToSpeak = button.dataset.textToSpeak;
         if (!textToSpeak) return;
 
-        var errorDisplay = App.views.platform.getAudioErrorDisplay(button);
+        const errorDisplay = App.views.platform.getAudioErrorDisplay(button);
         errorDisplay.classList.add('hidden');
 
-        var audioKey = App.views.platform.getAudioButtonKey(button);
-        var cached = App.state.generatedAudioCache.get(audioKey);
-        var isLessonAudio = Boolean(button.closest('#platform-view'));
-        var speechProfile = isLessonAudio
+        const audioKey = App.views.platform.getAudioButtonKey(button);
+        const cached = App.state.generatedAudioCache.get(audioKey);
+        const isLessonAudio = Boolean(button.closest('#platform-view'));
+        const speechProfile = isLessonAudio
             ? App.utils.getLessonSpeechProfile(button.dataset.lessonLang || App.utils.getActiveLessonLanguage())
             : null;
 
-        var handlePlaybackError = function(playError) {
+        const handlePlaybackError = (playError) => {
             console.error("Audio playback error:", playError);
             App.utils.displayError(errorDisplay, 'Audio playback failed: ' + playError.message);
         };
@@ -428,7 +428,7 @@ App.views.platform = {
                 App.views.platform.showDownloadButton(button);
                 return;
             }
-            var audioBlob = await App.api.callTTSAPI(textToSpeak, button, { speechProfile: speechProfile });
+            const audioBlob = await App.api.callTTSAPI(textToSpeak, button, { speechProfile: speechProfile });
             App.views.platform.cacheGeneratedAudio(audioKey, audioBlob);
             App.utils.playAudioBlob(audioBlob, speechProfile, handlePlaybackError);
             App.views.platform.showDownloadButton(button);
