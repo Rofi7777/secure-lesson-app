@@ -3,7 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多功能學習平台</title>
+    <title>LingoVerse AI — Your AI Learning Universe</title>
+    <meta name="description" content="AI-powered multilingual learning platform. Generate lessons, analyze homework, create storybooks, and chat with AI tutors in Chinese, English, Vietnamese, and Japanese.">
+    <meta name="theme-color" content="#6366f1">
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.banahillsluckyspin.chat/">
+    <meta property="og:title" content="LingoVerse AI — Your AI Learning Universe">
+    <meta property="og:description" content="AI-powered multilingual learning platform. Generate lessons, storybooks, and chat with AI tutors.">
+    <meta property="og:image" content="https://www.banahillsluckyspin.chat/icons/icon-512x512.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="LingoVerse AI">
+    <meta name="twitter:description" content="AI-powered multilingual learning platform for kids and adults.">
+    <meta name="twitter:image" content="https://www.banahillsluckyspin.chat/icons/icon-512x512.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
@@ -822,6 +844,16 @@
     <script src="js/views/ai-tutor.js"></script>
     <script src="js/views/admin.js"></script>
     <script src="js/app.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+    </script>
+
+    <!-- Vercel Analytics -->
+    <script defer src="/_vercel/insights/script.js"></script>
 
     </div> <!-- End of main-app -->
 </body>

@@ -3,6 +3,41 @@ App.views = App.views || {};
 
 App.views.platform = {
 
+    // --- Lesson cache (localStorage) ---
+    _cacheKey: function(subject, topic, age, lessonType, lang) {
+        return 'lv_lesson_' + [subject, topic, age, lessonType, lang].join('|');
+    },
+
+    _getCachedLesson: function(key) {
+        try {
+            const cached = localStorage.getItem(key);
+            if (!cached) return null;
+            const data = JSON.parse(cached);
+            // Expire after 7 days
+            if (Date.now() - data.ts > 7 * 24 * 60 * 60 * 1000) {
+                localStorage.removeItem(key);
+                return null;
+            }
+            return data.lesson;
+        } catch { return null; }
+    },
+
+    _setCachedLesson: function(key, lesson) {
+        try {
+            // Keep cache under 4MB — evict oldest if needed
+            const allKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k.startsWith('lv_lesson_')) allKeys.push(k);
+            }
+            if (allKeys.length > 50) {
+                allKeys.sort();
+                localStorage.removeItem(allKeys[0]);
+            }
+            localStorage.setItem(key, JSON.stringify({ ts: Date.now(), lesson }));
+        } catch { /* quota exceeded, silently fail */ }
+    },
+
     // --- Private helpers ---
 
     _getCustomTopicOptionText: function() {
@@ -334,6 +369,17 @@ App.views.platform = {
             }
             const langName = new Intl.DisplayNames(['en'], {type: 'language'}).of(subject.toLowerCase().includes('english') ? 'en' : App.state.currentLang);
 
+            // Check localStorage cache
+            const cacheKey = App.views.platform._cacheKey(subject, topic, age, lessonType, App.state.currentLang);
+            const cached = App.views.platform._getCachedLesson(cacheKey);
+            if (cached) {
+                App.state.currentLesson = cached;
+                App.views.platform.renderLesson();
+                lessonContainer.classList.remove('hidden');
+                App.utils.setLoading(generateLessonBtn, false);
+                return;
+            }
+
             const systemPrompt = 'You are an expert curriculum designer. Your task is to generate a mini-lesson as a single, valid JSON object. The lesson is for a ' + age + ' old student, the format is "' + lessonType + '". All property names in the JSON must be enclosed in double quotes. Output ONLY the JSON object.';
             const userPrompt = 'Generate a mini-lesson about "' + topic + '" in the subject of ' + subject + '. The main learning language for this lesson is ' + langName + '.\n' +
 'The lesson must include:\n' +
@@ -379,6 +425,9 @@ App.views.platform = {
             App.state.currentLesson.selectedTopicName = topic;
             App.views.platform.renderLesson();
             lessonContainer.classList.remove('hidden');
+
+            // Cache to localStorage
+            App.views.platform._setCachedLesson(cacheKey, App.state.currentLesson);
 
             // Save lesson to history (guarded)
             if (App.state.isAuthenticated && typeof saveLessonToHistory === 'function') {
