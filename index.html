@@ -31,8 +31,8 @@
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <!-- Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Pinyin annotation library -->
-    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3/dist/index.js"></script>
+    <!-- Pinyin annotation library (async to avoid blocking page load) -->
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3/dist/index.js" defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         body {
@@ -892,7 +892,10 @@
     <!-- Service Worker Registration -->
     <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
+        navigator.serviceWorker.register('/sw.js').then(function(reg) {
+            // Force update check on every page load
+            reg.update();
+        }).catch(() => {});
     }
     </script>
 
