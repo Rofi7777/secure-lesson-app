@@ -117,17 +117,12 @@ App.api = {
             const apiUrl = `${App.config.GEMINI_API_BASE}/${ttsModel}:generateContent?key=${App.config.GEMINI_API_KEY}`;
             const speechProfile = options.speechProfile || null;
             const voiceCandidates = Array.from(new Set([options.voiceName || App.config.voiceProfiles.default, App.config.voiceProfiles.default]));
-            const rateCandidates = speechProfile?.apiRate ? [speechProfile.apiRate, null] : [null];
-
-            const requestTTS = async (voiceName, speakingRate) => {
+            const requestTTS = async (voiceName) => {
                 const speechConfig = {
                     voiceConfig: {
                         prebuiltVoiceConfig: { voiceName }
                     }
                 };
-                if (typeof speakingRate === 'number') {
-                    speechConfig.speakingRate = speakingRate;
-                }
                 const payload = {
                     contents: [{ parts: [{ text }] }],
                     generationConfig: {
@@ -194,13 +189,11 @@ App.api = {
 
             let lastError;
             for (const voiceName of voiceCandidates) {
-                for (const speakingRate of rateCandidates) {
-                    try {
-                        return await requestTTS(voiceName, speakingRate);
-                    } catch (error) {
-                        lastError = error;
-                        console.warn(`TTS attempt failed (voice=${voiceName}, rate=${speakingRate ?? 'default'})`, error);
-                    }
+                try {
+                    return await requestTTS(voiceName);
+                } catch (error) {
+                    lastError = error;
+                    console.warn(`TTS attempt failed (voice=${voiceName})`, error);
                 }
             }
 
