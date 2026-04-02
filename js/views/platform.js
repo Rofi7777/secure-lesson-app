@@ -196,8 +196,17 @@ App.views.platform = {
 
             const wordSpeechAttr = App.utils.encodeForDataAttr(item.word || translationText);
             const vocabAudioButton = wordSpeechAttr ? '\n' +
-                '    <button class="play-audio-btn flex-shrink-0 ml-4" data-text-to-speak="' + wordSpeechAttr + '" data-lesson-lang="' + lang + '">\n' +
+                '    <button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + wordSpeechAttr + '" data-lesson-lang="' + lang + '" title="' + item.word + '">\n' +
                 '        <i class="fas fa-play"></i>\n' +
+                '        <div class="audio-loader"></div>\n' +
+                '    </button>' : '';
+
+            // Chinese audio button: if word is not Chinese but translation is, add a ZH play button
+            const zhTransText = (item.translation && item.translation['zh-Hant']) ? item.translation['zh-Hant'] : '';
+            const zhTransSpeechAttr = (!wordHasChinese && zhTransText) ? App.utils.encodeForDataAttr(zhTransText) : '';
+            const zhAudioButton = zhTransSpeechAttr ? '\n' +
+                '    <button class="play-audio-btn flex-shrink-0 bg-emerald-500 hover:bg-emerald-600" data-text-to-speak="' + zhTransSpeechAttr + '" data-lesson-lang="zh-Hant" title="' + zhTransText + '">\n' +
+                '        <span style="font-size:10px;font-weight:bold;">中</span>\n' +
                 '        <div class="audio-loader"></div>\n' +
                 '    </button>' : '';
 
@@ -211,7 +220,10 @@ App.views.platform = {
                 '        ' + pinyinTransHTML + '\n' +
                 '        ' + exampleHTML + '\n' +
                 '    </div>\n' +
-                '    ' + vocabAudioButton + '\n' +
+                '    <div class="flex flex-col gap-2 flex-shrink-0 ml-4">\n' +
+                '        ' + vocabAudioButton + '\n' +
+                '        ' + zhAudioButton + '\n' +
+                '    </div>\n' +
                 '</div>';
         }).join('');
     },
@@ -239,10 +251,20 @@ App.views.platform = {
             const phrasePinyinTransHTML = (phrasePinyinTarget === 'translation' && phrasePinyinText) ? '\n                <p class="pinyin-line">' + phrasePinyinText + '</p>' : '';
             const phraseSpeechAttr = App.utils.encodeForDataAttr(item.phrase || translationText);
             const phraseAudioButton = phraseSpeechAttr ? '\n' +
-                '    <button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + phraseSpeechAttr + '" data-lesson-lang="' + lang + '">\n' +
+                '    <button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + phraseSpeechAttr + '" data-lesson-lang="' + lang + '" title="' + (item.phrase || '') + '">\n' +
                 '        <i class="fas fa-play"></i>\n' +
                 '        <div class="audio-loader"></div>\n' +
                 '    </button>' : '';
+
+            // Chinese audio button for phrases
+            const phraseZhText = (item.translation && item.translation['zh-Hant']) ? item.translation['zh-Hant'] : '';
+            const phraseZhSpeechAttr = (!phraseHasChinese && phraseZhText) ? App.utils.encodeForDataAttr(phraseZhText) : '';
+            const phraseZhAudioButton = phraseZhSpeechAttr ? '\n' +
+                '    <button class="play-audio-btn flex-shrink-0 bg-emerald-500 hover:bg-emerald-600" data-text-to-speak="' + phraseZhSpeechAttr + '" data-lesson-lang="zh-Hant" title="' + phraseZhText + '">\n' +
+                '        <span style="font-size:10px;font-weight:bold;">中</span>\n' +
+                '        <div class="audio-loader"></div>\n' +
+                '    </button>' : '';
+
             return '\n' +
                 '<div class="p-4 bg-white/10 rounded-lg flex justify-between items-center">\n' +
                 '    <div>\n' +
@@ -251,7 +273,10 @@ App.views.platform = {
                 '        <p class="text-sm mt-1">' + translationText + '</p>\n' +
                 '        ' + phrasePinyinTransHTML + '\n' +
                 '    </div>\n' +
-                '    ' + phraseAudioButton + '\n' +
+                '    <div class="flex gap-2 flex-shrink-0">\n' +
+                '        ' + phraseAudioButton + '\n' +
+                '        ' + phraseZhAudioButton + '\n' +
+                '    </div>\n' +
                 '</div>';
         }).join('');
     },
