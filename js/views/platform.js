@@ -167,8 +167,22 @@ App.views.platform = {
         return App.state.currentLesson.vocabulary.map((item) => {
             const translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.word;
             const phoneticHTML = item.phonetic ? '<p class="text-sm text-cyan-300">/<span data-translate-key="phoneticLabel">' + App.translations[lang].phoneticLabel + '</span>: ' + item.phonetic + '/</p>' : '';
-            const pinyinText = item.pinyin || (App.pinyin.isActive(targetLang) ? App.pinyin.getWordPinyin(item.word) : '');
-            const pinyinHTML = (App.pinyin.isActive(targetLang) && pinyinText) ? '<p class="pinyin-line"><span>' + (App.translations[lang].pinyinLabel || 'Pinyin') + '</span>: ' + pinyinText + '</p>' : '';
+            // Pinyin: show for whichever text is Chinese — the word itself OR the translation
+            const wordHasChinese = App.pinyin._cjkRegex && App.pinyin._cjkRegex.test(item.word);
+            const transHasChinese = App.pinyin._cjkRegex && App.pinyin._cjkRegex.test(translationText);
+            var pinyinText = '';
+            var pinyinTarget = ''; // 'word' or 'translation' — where to show pinyin
+            if (App.state.showPinyin) {
+                if (wordHasChinese) {
+                    pinyinText = item.pinyin || App.pinyin.getWordPinyin(item.word);
+                    pinyinTarget = 'word';
+                } else if (transHasChinese) {
+                    pinyinText = App.pinyin.getWordPinyin(translationText);
+                    pinyinTarget = 'translation';
+                }
+            }
+            const pinyinWordHTML = (pinyinTarget === 'word' && pinyinText) ? '<p class="pinyin-line">' + pinyinText + '</p>' : '';
+            const pinyinTransHTML = (pinyinTarget === 'translation' && pinyinText) ? '<p class="pinyin-line">' + pinyinText + '</p>' : '';
 
             const exampleSentence = (item.example_sentence && typeof item.example_sentence === 'object' && item.example_sentence[targetLang])
                 ? item.example_sentence[targetLang]
@@ -191,9 +205,10 @@ App.views.platform = {
                 '<div class="p-4 bg-white/10 rounded-lg flex justify-between items-start">\n' +
                 '    <div class="flex-grow">\n' +
                 '        <p class="font-bold text-lg text-yellow-300">' + item.word + '</p>\n' +
-                '        ' + pinyinHTML + '\n' +
+                '        ' + pinyinWordHTML + '\n' +
                 '        ' + phoneticHTML + '\n' +
                 '        <p class="text-sm mt-1 font-semibold">' + translationText + '</p>\n' +
+                '        ' + pinyinTransHTML + '\n' +
                 '        ' + exampleHTML + '\n' +
                 '    </div>\n' +
                 '    ' + vocabAudioButton + '\n' +
@@ -206,8 +221,22 @@ App.views.platform = {
         const lang = targetLang || App.state.currentLang;
         return App.state.currentLesson.phrases.map((item) => {
             const translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.phrase;
-            const pinyinText = item.pinyin || (App.pinyin.isActive(targetLang) ? App.pinyin.getWordPinyin(item.phrase) : '');
-            const pinyinHTML = (App.pinyin.isActive(targetLang) && pinyinText) ? '\n                <p class="pinyin-line">' + pinyinText + '</p>' : '';
+            // Pinyin: show for whichever text is Chinese
+            const phraseHasChinese = App.pinyin._cjkRegex && App.pinyin._cjkRegex.test(item.phrase);
+            const phraseTransHasChinese = App.pinyin._cjkRegex && App.pinyin._cjkRegex.test(translationText);
+            var phrasePinyinText = '';
+            var phrasePinyinTarget = '';
+            if (App.state.showPinyin) {
+                if (phraseHasChinese) {
+                    phrasePinyinText = item.pinyin || App.pinyin.getWordPinyin(item.phrase);
+                    phrasePinyinTarget = 'phrase';
+                } else if (phraseTransHasChinese) {
+                    phrasePinyinText = App.pinyin.getWordPinyin(translationText);
+                    phrasePinyinTarget = 'translation';
+                }
+            }
+            const phrasePinyinPhraseHTML = (phrasePinyinTarget === 'phrase' && phrasePinyinText) ? '\n                <p class="pinyin-line">' + phrasePinyinText + '</p>' : '';
+            const phrasePinyinTransHTML = (phrasePinyinTarget === 'translation' && phrasePinyinText) ? '\n                <p class="pinyin-line">' + phrasePinyinText + '</p>' : '';
             const phraseSpeechAttr = App.utils.encodeForDataAttr(item.phrase || translationText);
             const phraseAudioButton = phraseSpeechAttr ? '\n' +
                 '    <button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + phraseSpeechAttr + '" data-lesson-lang="' + lang + '">\n' +
@@ -218,8 +247,9 @@ App.views.platform = {
                 '<div class="p-4 bg-white/10 rounded-lg flex justify-between items-center">\n' +
                 '    <div>\n' +
                 '        <p class="font-semibold text-lg text-yellow-300">' + item.phrase + '</p>\n' +
-                '        ' + pinyinHTML + '\n' +
+                '        ' + phrasePinyinPhraseHTML + '\n' +
                 '        <p class="text-sm mt-1">' + translationText + '</p>\n' +
+                '        ' + phrasePinyinTransHTML + '\n' +
                 '    </div>\n' +
                 '    ' + phraseAudioButton + '\n' +
                 '</div>';
@@ -303,7 +333,7 @@ App.views.platform = {
             '            <div class="flex justify-center flex-wrap gap-2 mb-4" id="lesson-lang-tabs">' +
             '                ' + explanationLangTabsHTML +
             '            </div>' +
-            '            <div id="lesson-explanation" class="text-indigo-200 leading-relaxed min-h-[120px]">' + (App.pinyin.isActive(App.state.currentLang) ? App.pinyin.annotate(App.state.currentLesson.explanation[App.state.currentLang]) : App.state.currentLesson.explanation[App.state.currentLang]) + '</div>' +
+            '            <p id="lesson-explanation" class="text-indigo-200 leading-relaxed min-h-[120px]">' + App.state.currentLesson.explanation[App.state.currentLang] + '</p>' +
             '            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 mt-4" id="lesson-audio-buttons">' +
             '                ' + explanationAudioButtonsHTML +
             '            </div>' +

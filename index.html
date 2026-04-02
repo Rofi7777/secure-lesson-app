@@ -218,19 +218,25 @@
         .download-audio-btn.hidden {
             display: none;
         }
-        /* Ruby / Pinyin annotation styles */
+        /* Ruby / Pinyin annotation styles (used in storybook view) */
         ruby { ruby-align: center; display: ruby; ruby-position: over; }
         ruby rt {
-            font-size: 0.55em;
+            font-size: 0.5em;
             color: #67e8f9;
             font-weight: normal;
-            opacity: 0.85;
+            opacity: 0.8;
             line-height: 1;
         }
+        /* Container with ruby needs more line height */
+        #story-display-container:has(ruby) {
+            line-height: 2.8;
+        }
+        /* Pinyin text line for vocabulary/phrase cards */
         .pinyin-line {
             font-size: 0.85em;
             color: #67e8f9;
             opacity: 0.9;
+            margin-top: 2px;
         }
 
     </style>

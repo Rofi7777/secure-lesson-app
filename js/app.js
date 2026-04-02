@@ -137,12 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const langTabBtn = e.target.closest('.lesson-lang-btn');
         if (langTabBtn) {
             const lang = langTabBtn.dataset.lang;
-            var explanationEl = document.getElementById('lesson-explanation');
-            if (App.pinyin.isActive(lang)) {
-                explanationEl.innerHTML = App.pinyin.annotate(App.state.currentLesson.explanation[lang]);
-            } else {
-                explanationEl.textContent = App.state.currentLesson.explanation[lang];
-            }
+            document.getElementById('lesson-explanation').textContent = App.state.currentLesson.explanation[lang];
             // Update vocabulary and phrases based on new lang
             const vocabList = document.getElementById('vocabulary-list');
             const phrasesList = document.getElementById('phrases-list');

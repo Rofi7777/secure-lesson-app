@@ -18,7 +18,8 @@ App.views.tutoring = {
             const wordText = typeof item?.word === 'string' && item.word.trim() ? item.word.trim() : 'Word ' + (index + 1);
             const meaningText = typeof item?.meaning === 'string' ? item.meaning.trim() : '';
             const phoneticText = typeof item?.phonetic === 'string' ? item.phonetic.trim() : '';
-            const pinyinText = typeof item?.pinyin === 'string' ? item.pinyin.trim() : (App.pinyin.isActive() ? App.pinyin.getWordPinyin(wordText) : '');
+            const wordHasChinese = App.pinyin._cjkRegex && App.pinyin._cjkRegex.test(wordText);
+            const pinyinText = typeof item?.pinyin === 'string' ? item.pinyin.trim() : (App.state.showPinyin && wordHasChinese ? App.pinyin.getWordPinyin(wordText) : '');
             const exampleText = typeof item?.example === 'string' ? item.example.trim() : '';
             const wordSpeechAttr = App.utils.encodeForDataAttr(wordText);
             const exampleSpeechAttr = exampleText ? App.utils.encodeForDataAttr(exampleText) : '';
@@ -36,7 +37,7 @@ App.views.tutoring = {
                 '<div class="p-4 bg-white/10 rounded-lg flex flex-col gap-4 md:flex-row md:items-start">\n' +
                 '    <div class="flex-1">\n' +
                 '        <p class="font-bold text-lg text-yellow-300">' + wordText + '</p>\n' +
-                (App.pinyin.isActive() && pinyinText ? '        <p class="pinyin-line">' + (App.translations[App.state.currentLang]?.pinyinLabel || 'Pinyin') + ': ' + pinyinText + '</p>\n' : '') +
+                (App.state.showPinyin && pinyinText ? '        <p class="pinyin-line">' + (App.translations[App.state.currentLang]?.pinyinLabel || 'Pinyin') + ': ' + pinyinText + '</p>\n' : '') +
                 (phoneticText ? '        <p class="text-sm text-cyan-300">' + phoneticLabel + ': ' + phoneticText + '</p>\n' : '') +
                 (meaningText ? '        <p class="text-sm mt-1 text-white/90">' + meaningText + '</p>\n' : '') +
                 (exampleText ? '        <p class="text-sm italic mt-2 text-indigo-200">"' + exampleLabel + ': ' + exampleText + '"</p>\n' : '') +
