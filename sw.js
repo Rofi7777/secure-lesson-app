@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lingoverse-v2';
+const CACHE_NAME = 'lingoverse-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -8,6 +8,7 @@ const STATIC_ASSETS = [
   '/js/utils.js',
   '/js/api.js',
   '/js/i18n.js',
+  '/js/pinyin.js',
   '/js/auth.js',
   '/js/learning-tracker.js',
   '/js/views/platform.js',

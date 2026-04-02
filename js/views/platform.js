@@ -167,6 +167,8 @@ App.views.platform = {
         return App.state.currentLesson.vocabulary.map((item) => {
             const translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.word;
             const phoneticHTML = item.phonetic ? '<p class="text-sm text-cyan-300">/<span data-translate-key="phoneticLabel">' + App.translations[lang].phoneticLabel + '</span>: ' + item.phonetic + '/</p>' : '';
+            const pinyinText = item.pinyin || (App.pinyin.isActive(targetLang) ? App.pinyin.getWordPinyin(item.word) : '');
+            const pinyinHTML = (App.pinyin.isActive(targetLang) && pinyinText) ? '<p class="pinyin-line"><span>' + (App.translations[lang].pinyinLabel || 'Pinyin') + '</span>: ' + pinyinText + '</p>' : '';
 
             const exampleSentence = (item.example_sentence && typeof item.example_sentence === 'object' && item.example_sentence[targetLang])
                 ? item.example_sentence[targetLang]
@@ -189,6 +191,7 @@ App.views.platform = {
                 '<div class="p-4 bg-white/10 rounded-lg flex justify-between items-start">\n' +
                 '    <div class="flex-grow">\n' +
                 '        <p class="font-bold text-lg text-yellow-300">' + item.word + '</p>\n' +
+                '        ' + pinyinHTML + '\n' +
                 '        ' + phoneticHTML + '\n' +
                 '        <p class="text-sm mt-1 font-semibold">' + translationText + '</p>\n' +
                 '        ' + exampleHTML + '\n' +
@@ -203,6 +206,8 @@ App.views.platform = {
         const lang = targetLang || App.state.currentLang;
         return App.state.currentLesson.phrases.map((item) => {
             const translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.phrase;
+            const pinyinText = item.pinyin || (App.pinyin.isActive(targetLang) ? App.pinyin.getWordPinyin(item.phrase) : '');
+            const pinyinHTML = (App.pinyin.isActive(targetLang) && pinyinText) ? '\n                <p class="pinyin-line">' + pinyinText + '</p>' : '';
             const phraseSpeechAttr = App.utils.encodeForDataAttr(item.phrase || translationText);
             const phraseAudioButton = phraseSpeechAttr ? '\n' +
                 '    <button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + phraseSpeechAttr + '" data-lesson-lang="' + lang + '">\n' +
@@ -213,6 +218,7 @@ App.views.platform = {
                 '<div class="p-4 bg-white/10 rounded-lg flex justify-between items-center">\n' +
                 '    <div>\n' +
                 '        <p class="font-semibold text-lg text-yellow-300">' + item.phrase + '</p>\n' +
+                '        ' + pinyinHTML + '\n' +
                 '        <p class="text-sm mt-1">' + translationText + '</p>\n' +
                 '    </div>\n' +
                 '    ' + phraseAudioButton + '\n' +
@@ -297,7 +303,7 @@ App.views.platform = {
             '            <div class="flex justify-center flex-wrap gap-2 mb-4" id="lesson-lang-tabs">' +
             '                ' + explanationLangTabsHTML +
             '            </div>' +
-            '            <p id="lesson-explanation" class="text-indigo-200 leading-relaxed min-h-[120px]">' + App.state.currentLesson.explanation[App.state.currentLang] + '</p>' +
+            '            <div id="lesson-explanation" class="text-indigo-200 leading-relaxed min-h-[120px]">' + (App.pinyin.isActive(App.state.currentLang) ? App.pinyin.annotate(App.state.currentLesson.explanation[App.state.currentLang]) : App.state.currentLesson.explanation[App.state.currentLang]) + '</div>' +
             '            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 mt-4" id="lesson-audio-buttons">' +
             '                ' + explanationAudioButtonsHTML +
             '            </div>' +
@@ -389,18 +395,19 @@ App.views.platform = {
 '2.  If the lesson type is NOT "AI\u63D0\u554F", include a list of 5-7 core "vocabulary" words. The "word" field must be in the main learning language (' + langName + '). For each word:\n' +
 '    a. Provide its "translation" in an object with all four languages (zh-Hant, en, vi, ja).\n' +
 '    b. Provide an IPA "phonetic" transcription as a single string.\n' +
-'    c. Provide a simple "example_sentence" as an object with all four languages (zh-Hant, en, vi, ja).\n' +
-'3.  If the lesson type is NOT "AI\u63D0\u554F", include a list of 3-4 simple, practical "phrases". The "phrase" field must be in the main learning language (' + langName + '). For each phrase, provide its "translation" in an object with all four languages.\n' +
+'    c. Provide a "pinyin" field with the Hanyu Pinyin romanization using tone marks (e.g., "nǐ hǎo"). If the word is not Chinese, omit this field.\n' +
+'    d. Provide a simple "example_sentence" as an object with all four languages (zh-Hant, en, vi, ja).\n' +
+'3.  If the lesson type is NOT "AI\u63D0\u554F", include a list of 3-4 simple, practical "phrases". The "phrase" field must be in the main learning language (' + langName + '). For each phrase, provide its "translation" in an object with all four languages and a "pinyin" field with Hanyu Pinyin romanization (if Chinese).\n' +
 '4.  An "image_prompt" for an image generation model to create a colorful, friendly, cartoon-style illustration for this lesson.\n' +
 '\n' +
 'Output ONLY a single, valid JSON object in the following format. Omit "vocabulary" and "phrases" keys if the lesson type is "AI\u63D0\u554F". Ensure all property names are double-quoted.\n' +
 '{\n' +
 '  "explanation": { "zh-Hant": "...", "en": "...", "vi": "...", "ja": "..." },\n' +
 '  "vocabulary": [\n' +
-'    { "word": "...", "phonetic": "...", "example_sentence": { "zh-Hant": "...", "en": "...", "vi": "...", "ja": "..." }, "translation": { "zh-Hant": "...", "en": "...", "vi": "...", "ja": "..." } }\n' +
+'    { "word": "...", "phonetic": "...", "pinyin": "...", "example_sentence": { "zh-Hant": "...", "en": "...", "vi": "...", "ja": "..." }, "translation": { "zh-Hant": "...", "en": "...", "vi": "...", "ja": "..." } }\n' +
 '  ],\n' +
 '  "phrases": [\n' +
-'    { "phrase": "...", "translation": { "zh-Hant": "...", "en": "...", "vi": "...", "ja": "..." } }\n' +
+'    { "phrase": "...", "pinyin": "...", "translation": { "zh-Hant": "...", "en": "...", "vi": "...", "ja": "..." } }\n' +
 '  ],\n' +
 '  "image_prompt": "..."\n' +
 '}';

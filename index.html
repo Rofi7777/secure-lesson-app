@@ -31,6 +31,8 @@
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <!-- Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Pinyin annotation library -->
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3/dist/index.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         body {
@@ -215,6 +217,20 @@
         }
         .download-audio-btn.hidden {
             display: none;
+        }
+        /* Ruby / Pinyin annotation styles */
+        ruby { ruby-align: center; display: ruby; ruby-position: over; }
+        ruby rt {
+            font-size: 0.55em;
+            color: #67e8f9;
+            font-weight: normal;
+            opacity: 0.85;
+            line-height: 1;
+        }
+        .pinyin-line {
+            font-size: 0.85em;
+            color: #67e8f9;
+            opacity: 0.9;
         }
 
     </style>
@@ -447,6 +463,9 @@
         <div class="absolute top-4 right-4 md:top-6 md:right-8 z-20 overflow-visible flex items-center gap-2">
             <button id="logout-btn" class="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-all hidden" title="登出">
                 <i class="fas fa-sign-out-alt mr-1"></i>登出
+            </button>
+            <button id="pinyin-toggle" class="bg-white/20 text-white rounded-md px-3 py-2 border-2 border-white/30 text-sm font-medium hover:bg-white/30 transition-all" title="Toggle Pinyin">
+                <span class="btn-text">拼音 ON</span>
             </button>
             <select id="language-switcher" class="language-select bg-white/20 text-white rounded-md p-2 border-2 border-white/30 focus:outline-none focus:ring-2 focus:ring-yellow-400">
                 <option value="zh-Hant">繁體中文</option>
@@ -860,6 +879,7 @@
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
     <script src="js/i18n.js"></script>
+    <script src="js/pinyin.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/learning-tracker.js"></script>
     <script src="js/views/platform.js"></script>

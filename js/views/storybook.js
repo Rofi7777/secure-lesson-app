@@ -36,7 +36,12 @@ App.views.storybook = {
             const prompt = 'Based on this image, write a ' + style + ' children\'s story suitable for a ' + age + ' old child. The story should be in ' + lang + '. ' + (charName ? 'The main character\'s name is ' + charName + '.' : '') + ' **The story must be detailed and between 500 and 600 words.**';
 
             const storyText = await App.api.callGeminiAPI(prompt, "", base64Image);
-            storyDisplayContainer.textContent = storyText;
+            storyDisplayContainer.dataset.rawText = storyText;
+            if (App.pinyin.isActive(storybookLanguageSelect.value)) {
+                storyDisplayContainer.innerHTML = App.pinyin.annotate(storyText);
+            } else {
+                storyDisplayContainer.textContent = storyText;
+            }
             storyOutputContainer.classList.remove('hidden');
 
             const audioBlob = await App.api.callTTSAPI(storyText, playStoryBtn);

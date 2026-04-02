@@ -99,7 +99,8 @@ App.views.aiTutor = {
             const formattedAdvice = App.utils.simpleMarkdownParse(responseData.advice);
             chatHistory.push({ role: 'model', text: responseData.advice, expertId: currentExpertId }); // Store expertId with the turn
 
-            loadingBubble.outerHTML = '<div class="flex justify-start mb-4"><div class="chat-bubble bot p-4 prose prose-sm max-w-none text-slate-800">' + formattedAdvice + '</div></div>';
+            const finalAdvice = App.pinyin.isActive() ? App.pinyin.annotateHTML(formattedAdvice) : formattedAdvice;
+            loadingBubble.outerHTML = '<div class="flex justify-start mb-4"><div class="chat-bubble bot p-4 prose prose-sm max-w-none text-slate-800">' + finalAdvice + '</div></div>';
 
             const followUpQuestions = responseData.followUpQuestions;
             if (followUpQuestions && followUpQuestions.length > 0) {

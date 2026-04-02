@@ -137,7 +137,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const langTabBtn = e.target.closest('.lesson-lang-btn');
         if (langTabBtn) {
             const lang = langTabBtn.dataset.lang;
-            document.getElementById('lesson-explanation').textContent = App.state.currentLesson.explanation[lang];
+            var explanationEl = document.getElementById('lesson-explanation');
+            if (App.pinyin.isActive(lang)) {
+                explanationEl.innerHTML = App.pinyin.annotate(App.state.currentLesson.explanation[lang]);
+            } else {
+                explanationEl.textContent = App.state.currentLesson.explanation[lang];
+            }
             // Update vocabulary and phrases based on new lang
             const vocabList = document.getElementById('vocabulary-list');
             const phrasesList = document.getElementById('phrases-list');
@@ -442,6 +447,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         els.aiTutorInput.addEventListener('input', () => checkChatButtonStatus(els.aiTutorInput, els.aiTutorExpertGroup, els.getAdviceBtn));
         els.getAdviceBtn.addEventListener('click', () => App.views.aiTutor.getAdviceOrDiagnosis(false));
         els.aiTutorResponseContainer.addEventListener('click', (e) => handleFollowUpClick(e, false));
+
+        // Pinyin toggle init
+        App.pinyin.init();
 
         // --- Startup ---
         App.i18n.setLanguage(App.state.currentLang);

@@ -24,7 +24,8 @@ App.state = {
     tutoringFiles: [],
     explanationAudioBlobs: {},
     audioButtonCounter: 0,
-    generatedAudioCache: new Map()
+    generatedAudioCache: new Map(),
+    showPinyin: localStorage.getItem('lv_showPinyin') !== 'false'
 };
 
 // Voice and speech profiles

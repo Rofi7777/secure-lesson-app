@@ -19,7 +19,8 @@ App.translations = {
         voiceLabels: { female: '女聲', male: '男聲' },
         dialogueBadge: '對話',
         downloadAudio: '下載{lang}語音',
-        phoneticLabel: '音標', exampleLabel: '例句',
+        phoneticLabel: '音標', pinyinLabel: '拼音', exampleLabel: '例句',
+        pinyinOn: '拼音 ON', pinyinOff: '拼音 OFF',
         downloadAudioBtn: '下載語音 (WAV)', imageError: '圖片生成失敗', audioError: '語音生成失敗', lessonError: '課程生成失敗: {message}',
         topics: {
             'KidsEnglish': ['動物', '家庭', '顏色', '數字', '食物', '衣服', '身體部位', '天氣', '情緒', '學校'],
@@ -120,7 +121,8 @@ App.translations = {
         voiceLabels: { female: 'Female Voice', male: 'Male Voice' },
         dialogueBadge: 'Dialogue',
         downloadAudio: 'Download {lang} Audio',
-        phoneticLabel: 'Phonetic', exampleLabel: 'Example',
+        phoneticLabel: 'Phonetic', pinyinLabel: 'Pinyin', exampleLabel: 'Example',
+        pinyinOn: 'Pinyin ON', pinyinOff: 'Pinyin OFF',
         downloadAudioBtn: 'Download Audio (WAV)', imageError: 'Image generation failed', audioError: 'Audio generation failed', lessonError: 'Lesson Generation Error: {message}',
         topics: {
             'KidsEnglish': ['Animals', 'Family', 'Colors', 'Numbers', 'Food', 'Clothes', 'Body Parts', 'Weather', 'Emotions', 'School'],
@@ -221,7 +223,8 @@ App.translations = {
         voiceLabels: { female: 'Giọng nữ', male: 'Giọng nam' },
         dialogueBadge: 'Hội thoại',
         downloadAudio: 'Tải xuống âm thanh {lang}',
-        phoneticLabel: 'Phiên âm', exampleLabel: 'Ví dụ',
+        phoneticLabel: 'Phiên âm', pinyinLabel: 'Pinyin', exampleLabel: 'Ví dụ',
+        pinyinOn: 'Pinyin ON', pinyinOff: 'Pinyin OFF',
         downloadAudioBtn: 'Tải xuống âm thanh (WAV)', imageError: 'Tạo ảnh thất bại', audioError: 'Tạo âm thanh thất bại', lessonError: 'Lỗi tạo bài học: {message}',
         topics: {
             'KidsEnglish': ['Động vật', 'Gia đình', 'Màu sắc', 'Số', 'Thức ăn', 'Quần áo', 'Các bộ phận cơ thể', 'Thời tiết', 'Cảm xúc', 'Trường học'],
@@ -322,7 +325,8 @@ App.translations = {
         voiceLabels: { female: '女性', male: '男性' },
         dialogueBadge: '対話',
         downloadAudio: '{lang}音声をダウンロード',
-        phoneticLabel: '発音記号', exampleLabel: '例文',
+        phoneticLabel: '発音記号', pinyinLabel: 'ピンイン', exampleLabel: '例文',
+        pinyinOn: 'ピンイン ON', pinyinOff: 'ピンイン OFF',
         downloadAudioBtn: '音声をダウンロード (WAV)', imageError: '画像生成に失敗しました', audioError: '音声生成に失敗しました', lessonError: 'レッスン生成エラー: {message}',
         topics: {
             'KidsEnglish': ['動物', '家族', '色', '数字', '食べ物', '服', '体の部位', '天気', '感情', '学校'],
