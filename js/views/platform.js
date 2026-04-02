@@ -173,13 +173,13 @@ App.views.platform = {
             var zhLineHTML = '';
             if (App.state.showPinyin && zhTransText) {
                 const py = item.pinyin || App.pinyin.getWordPinyin(zhTransText);
-                // Only show separate zh line if the current display doesn't already show Chinese
-                if (targetLang !== 'zh-Hant' || !wordHasChinese) {
+                if (targetLang !== 'zh-Hant') {
+                    // Non-Chinese tab: show Chinese translation + pinyin as extra line
                     zhLineHTML = '<p class="text-sm mt-1 font-semibold text-emerald-300">' + zhTransText + '</p>' +
                         (py ? '<p class="pinyin-line">' + py + '</p>' : '');
-                } else if (wordHasChinese && py) {
-                    // Word itself is Chinese, show pinyin under it
-                    zhLineHTML = '<p class="pinyin-line">' + py + '</p>';
+                } else {
+                    // Chinese tab: just show pinyin (translation is already Chinese)
+                    zhLineHTML = py ? '<p class="pinyin-line">' + py + '</p>' : '';
                 }
             }
 
@@ -241,11 +241,11 @@ App.views.platform = {
             var phraseZhLineHTML = '';
             if (App.state.showPinyin && phraseZhText) {
                 const py = item.pinyin || App.pinyin.getWordPinyin(phraseZhText);
-                if (targetLang !== 'zh-Hant' || !phraseHasChinese) {
+                if (targetLang !== 'zh-Hant') {
                     phraseZhLineHTML = '<p class="text-sm mt-1 text-emerald-300">' + phraseZhText + '</p>' +
                         (py ? '<p class="pinyin-line">' + py + '</p>' : '');
-                } else if (phraseHasChinese && py) {
-                    phraseZhLineHTML = '<p class="pinyin-line">' + py + '</p>';
+                } else {
+                    phraseZhLineHTML = py ? '<p class="pinyin-line">' + py + '</p>' : '';
                 }
             }
 
