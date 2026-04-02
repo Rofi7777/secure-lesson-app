@@ -483,7 +483,12 @@ App.views.platform = {
             }
 
             if (App.state.currentLesson.image_prompt) {
-                App.state.currentLesson.imageUrl = await App.api.callImagenAPI(App.state.currentLesson.image_prompt);
+                try {
+                    App.state.currentLesson.imageUrl = await App.api.callImagenAPI(App.state.currentLesson.image_prompt);
+                } catch (imgError) {
+                    console.warn("Image generation failed (lesson will render without image):", imgError.message);
+                    App.state.currentLesson.imageUrl = 'https://placehold.co/600x600/1e1b4b/9ca3af?text=Image+unavailable';
+                }
             }
 
             App.state.currentLesson.selectedTopicName = topic;
