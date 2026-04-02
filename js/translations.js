@@ -23,6 +23,7 @@ App.translations = {
         pinyinOn: '拼音 ON', pinyinOff: '拼音 OFF',
         downloadAudioBtn: '下載語音 (WAV)', imageError: '圖片生成失敗', audioError: '語音生成失敗', lessonError: '課程生成失敗: {message}',
         loadingLesson: '正在生成課程...', loadingAnalysis: '正在分析作業...', loadingStory: '正在創作故事...', loadingAudio: '正在生成語音...', generateStoryAudio: '生成故事語音',
+        toastLessonDone: '課程生成完成！', toastAnalysisDone: '作業分析完成！', toastStoryDone: '故事創作完成！', toastAudioDone: '語音生成完成！', toastCopied: '已複製到剪貼簿！', copyBtn: '複製',
         topics: {
             'KidsEnglish': ['動物', '家庭', '顏色', '數字', '食物', '衣服', '身體部位', '天氣', '情緒', '學校'],
             'AdultEnglish': ['商務會議', '旅行與觀光', '餐廳點餐', '工作面試', '社交活動', '健康與健身', '科技與網路', '購物', '新聞與時事', '電影與音樂'],

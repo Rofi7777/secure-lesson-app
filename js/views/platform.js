@@ -151,11 +151,10 @@ App.views.platform = {
                 voiceName: voiceName
             };
         });
-        const blobs = [];
-        for (let i = 0; i < segments.length; i++) {
-            const segmentBlob = await App.api.callTTSAPI(segments[i].text, null, { speechProfile: speechProfile, voiceName: segments[i].voiceName });
-            blobs.push(segmentBlob);
-        }
+        const blobPromises = segments.map(function(seg) {
+            return App.api.callTTSAPI(seg.text, null, { speechProfile: speechProfile, voiceName: seg.voiceName });
+        });
+        const blobs = await Promise.all(blobPromises);
         return App.utils.concatWavBlobs(blobs);
     },
 
@@ -359,6 +358,7 @@ App.views.platform = {
             '                ' + explanationLangTabsHTML +
             '            </div>' +
             '            <p id="lesson-explanation" class="text-indigo-200 leading-relaxed min-h-[120px]">' + App.state.currentLesson.explanation[App.state.currentLang] + '</p>' +
+            '            <button class="copy-text-btn mt-2 text-xs text-white/50 hover:text-white/80 transition" data-copy-target="lesson-explanation"><i class="fas fa-copy mr-1"></i>' + (App.translations[lang].copyBtn || 'Copy') + '</button>' +
             '            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 mt-4" id="lesson-audio-buttons">' +
             '                ' + explanationAudioButtonsHTML +
             '            </div>' +
@@ -495,6 +495,7 @@ App.views.platform = {
             App.state.currentLesson.selectedTopicName = topic;
             App.views.platform.renderLesson();
             lessonContainer.classList.remove('hidden');
+            App.utils.toast(App.translations[App.state.currentLang]?.toastLessonDone || 'Lesson generated!', 'success');
 
             // Cache to localStorage
             App.views.platform._setCachedLesson(cacheKey, App.state.currentLesson);

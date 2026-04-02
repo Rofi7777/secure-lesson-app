@@ -78,7 +78,11 @@ App.views.aiTutor = {
             const isFirstTurn = chatHistory.length === 0;
             const base64Image = null;
 
-            chatHistory.push({ role: 'user', text: userInput, expertId: currentExpertId }); // Store expertId with the turn
+            chatHistory.push({ role: 'user', text: userInput, expertId: currentExpertId });
+            // Keep last 20 messages to avoid slow API calls
+            if (chatHistory.length > 20) {
+                chatHistory.splice(0, chatHistory.length - 20);
+            }
             const fullPrompt = chatHistory.map((turn) => turn.role + ': ' + turn.text).join('\n');
 
             const rawJsonResponse = await App.api.callGeminiAPI(fullPrompt, expertData.systemPrompt, base64Image);

@@ -45,6 +45,7 @@ App.views.storybook = {
                 storyDisplayContainer.textContent = storyText;
             }
             storyOutputContainer.classList.remove('hidden');
+            App.utils.toast(App.translations[App.state.currentLang]?.toastStoryDone || 'Story created!', 'success');
 
             // Show "Generate Audio" button instead of auto-generating TTS
             if (generateAudioBtn) {
@@ -95,6 +96,7 @@ App.views.storybook = {
             audioControls.classList.remove('hidden');
             playStoryBtn.disabled = false;
             generateAudioBtn.classList.add('hidden');
+            App.utils.toast(App.translations[App.state.currentLang]?.toastAudioDone || 'Audio ready!', 'success');
         } catch (error) {
             console.error("Story Audio Error:", error);
             App.utils.displayError(storybookErrorMessage, error.message);

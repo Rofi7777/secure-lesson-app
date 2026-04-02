@@ -189,6 +189,18 @@ App.utils = {
         return { ...profile };
     },
 
+    // --- Toast Notifications ---
+
+    toast(message, type) {
+        var container = document.getElementById('toast-container');
+        if (!container) return;
+        var el = document.createElement('div');
+        el.className = 'toast toast-' + (type || 'success');
+        el.textContent = message;
+        container.appendChild(el);
+        setTimeout(function() { el.remove(); }, 3200);
+    },
+
     // --- Loading Overlay ---
 
     showOverlay(message) {

@@ -180,6 +180,7 @@ App.views.tutoring = {
             App.state.tutoringVocabularyItems = vocabularyItems;
             App.views.tutoring.renderTutoringVocabulary(vocabularyItems);
             tutoringResultsView.classList.remove('hidden');
+            App.utils.toast(App.translations[App.state.currentLang]?.toastAnalysisDone || 'Analysis complete!', 'success');
 
             // Save tutoring session to history (guarded)
             if (App.state.isAuthenticated && typeof saveTutoringToHistory === 'function') {

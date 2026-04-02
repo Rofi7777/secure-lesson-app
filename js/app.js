@@ -195,6 +195,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const copyBtn = e.target.closest('.copy-text-btn');
+        if (copyBtn) {
+            const targetId = copyBtn.dataset.copyTarget;
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) {
+                navigator.clipboard.writeText(targetEl.textContent).then(function() {
+                    App.utils.toast(App.translations[App.state.currentLang]?.toastCopied || 'Copied!', 'info');
+                });
+            }
+            return;
+        }
+
         const playBtn = e.target.closest('.play-audio-btn');
         if (playBtn) {
             App.views.platform.playAudio(e);
