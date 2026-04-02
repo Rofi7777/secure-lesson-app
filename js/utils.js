@@ -189,10 +189,41 @@ App.utils = {
         return { ...profile };
     },
 
+    // --- Loading Overlay ---
+
+    showOverlay(message) {
+        var overlay = document.getElementById('loading-overlay');
+        var textEl = document.getElementById('loading-overlay-text');
+        if (!overlay) return;
+        if (textEl) textEl.textContent = message || '處理中...';
+        overlay.style.display = 'flex';
+    },
+
+    hideOverlay() {
+        var overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
+    },
+
+    // Convert raw API error to user-friendly message
+    friendlyError(rawMessage) {
+        if (!rawMessage) return '發生未知錯誤，請稍後再試。';
+        var msg = String(rawMessage);
+        if (msg.includes('Invalid JSON')) return '伺服器回應格式異常，請重新嘗試。';
+        if (msg.includes('PROHIBITED_CONTENT')) return '內容被安全過濾器攔截，請換個主題再試。';
+        if (msg.includes('TTS request stopped')) return '語音生成被中斷，請稍後再試。';
+        if (msg.includes('Load failed') || msg.includes('Failed to fetch')) return '網路連線失敗，請確認網路後重試。';
+        if (msg.includes('429') || msg.includes('quota')) return 'API 使用次數超過限制，請稍後再試。';
+        if (msg.includes('500') || msg.includes('503')) return '伺服器暫時不可用，請稍後再試。';
+        if (msg.includes('API Error')) return '服務暫時無法回應，請稍後再試。';
+        // Fallback: truncate long technical messages
+        if (msg.length > 80) return '發生錯誤，請重新嘗試。';
+        return msg;
+    },
+
     // --- UI Helpers ---
 
     displayError(element, message) {
-        element.textContent = message;
+        element.textContent = App.utils.friendlyError(message);
         element.classList.remove('hidden');
     },
 

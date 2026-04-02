@@ -757,6 +757,10 @@
                                     </div>
                                     <div id="story-display-container" contenteditable="true" class="w-full h-48 bg-black/20 p-3 rounded-lg text-indigo-100 overflow-y-auto focus:ring-2 focus:ring-yellow-500 focus:outline-none" data-placeholder-key="storybook.storyPlaceholder">
                                     </div>
+                                    <button id="generate-story-audio-btn" class="hidden mt-3 w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2">
+                                        <span class="btn-text"><i class="fas fa-headphones mr-2"></i>生成故事語音</span>
+                                        <div class="loader hidden"></div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -857,6 +861,14 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-40" style="display:none;">
+        <div class="text-center text-white space-y-4">
+            <div class="loader mx-auto" style="width:40px;height:40px;border-width:3px;"></div>
+            <p id="loading-overlay-text" class="text-lg font-medium animate-pulse">處理中...</p>
+        </div>
     </div>
 
     <!-- Image Modal -->

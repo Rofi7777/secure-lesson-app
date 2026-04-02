@@ -12,8 +12,10 @@ App.views.storybook = {
         const playStoryBtn = document.getElementById('play-story-btn');
         const storybookLanguageSelect = document.getElementById('storybook-language');
         const storybookAgeSelect = document.getElementById('storybook-age');
+        const generateAudioBtn = document.getElementById('generate-story-audio-btn');
 
         App.utils.setLoading(generateStoryBtn, true);
+        App.utils.showOverlay(App.translations[App.state.currentLang]?.loadingStory || '正在創作故事...');
         storybookErrorMessage.classList.add('hidden');
         storyOutputContainer.classList.add('hidden');
         audioControls.classList.add('hidden');
@@ -44,11 +46,11 @@ App.views.storybook = {
             }
             storyOutputContainer.classList.remove('hidden');
 
-            const audioBlob = await App.api.callTTSAPI(storyText, playStoryBtn);
-            App.state.storyAudioBlob = audioBlob;
-            App.state.storyAudioUrl = URL.createObjectURL(audioBlob);
-            audioControls.classList.remove('hidden');
-            playStoryBtn.disabled = false;
+            // Show "Generate Audio" button instead of auto-generating TTS
+            if (generateAudioBtn) {
+                generateAudioBtn.classList.remove('hidden');
+                generateAudioBtn.disabled = false;
+            }
 
             // Save story to history (guarded)
             if (App.state.isAuthenticated && typeof saveStoryToHistory === 'function') {
@@ -59,15 +61,46 @@ App.views.storybook = {
                     style: style,
                     character_name: charName || null,
                     image_urls: Array.from(App.state.storybookFiles).map((f) => f.name),
-                    audio_url: App.state.storyAudioUrl
+                    audio_url: null
                 });
             }
 
         } catch (error) {
             console.error("Story Generation Error:", error);
-            App.utils.displayError(storybookErrorMessage, 'Story generation failed: ' + error.message);
+            App.utils.displayError(storybookErrorMessage, error.message);
         } finally {
             App.utils.setLoading(generateStoryBtn, false);
+            App.utils.hideOverlay();
+        }
+    },
+
+    generateStoryAudio: async function() {
+        const generateAudioBtn = document.getElementById('generate-story-audio-btn');
+        const audioControls = document.getElementById('audio-controls');
+        const playStoryBtn = document.getElementById('play-story-btn');
+        const storyDisplayContainer = document.getElementById('story-display-container');
+        const storybookErrorMessage = document.getElementById('storybook-error-message');
+
+        const storyText = storyDisplayContainer.dataset.rawText || storyDisplayContainer.textContent;
+        if (!storyText || !storyText.trim()) return;
+
+        App.utils.setLoading(generateAudioBtn, true);
+        App.utils.showOverlay(App.translations[App.state.currentLang]?.loadingAudio || '正在生成語音...');
+        storybookErrorMessage.classList.add('hidden');
+
+        try {
+            const audioBlob = await App.api.callTTSAPI(storyText, null);
+            App.state.storyAudioBlob = audioBlob;
+            App.state.storyAudioUrl = URL.createObjectURL(audioBlob);
+            audioControls.classList.remove('hidden');
+            playStoryBtn.disabled = false;
+            generateAudioBtn.classList.add('hidden');
+        } catch (error) {
+            console.error("Story Audio Error:", error);
+            App.utils.displayError(storybookErrorMessage, error.message);
+        } finally {
+            App.utils.setLoading(generateAudioBtn, false);
+            App.utils.hideOverlay();
         }
     }
 

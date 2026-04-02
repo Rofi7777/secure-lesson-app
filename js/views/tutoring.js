@@ -63,6 +63,7 @@ App.views.tutoring = {
         const problemAnalysisContainer = document.getElementById('problem-analysis-container');
 
         App.utils.setLoading(analyzeHomeworkBtn, true);
+        App.utils.showOverlay(App.translations[App.state.currentLang]?.loadingAnalysis || '正在分析作業...');
         tutoringErrorMessage.classList.add('hidden');
         tutoringResultsView.classList.add('hidden');
 
@@ -193,9 +194,10 @@ App.views.tutoring = {
 
         } catch (error) {
             console.error("Homework Analysis Error:", error);
-            App.utils.displayError(tutoringErrorMessage, 'Analysis failed: ' + error.message);
+            App.utils.displayError(tutoringErrorMessage, error.message);
         } finally {
             App.utils.setLoading(analyzeHomeworkBtn, false);
+            App.utils.hideOverlay();
         }
     }
 

@@ -409,6 +409,7 @@ App.views.platform = {
         const customTopicInput = document.getElementById('custom-topic-input');
 
         App.utils.setLoading(generateLessonBtn, true);
+        App.utils.showOverlay(App.translations[App.state.currentLang]?.loadingLesson || '正在生成課程...');
         errorMessage.classList.add('hidden');
         lessonContainer.classList.add('hidden');
         App.state.currentLesson = null;
@@ -516,9 +517,10 @@ App.views.platform = {
 
         } catch (error) {
             console.error("Lesson Generation Error:", error);
-            App.utils.displayError(errorMessage, App.translations[App.state.currentLang].lessonError.replace('{message}', error.message));
+            App.utils.displayError(errorMessage, error.message);
         } finally {
             App.utils.setLoading(generateLessonBtn, false);
+            App.utils.hideOverlay();
         }
     },
 

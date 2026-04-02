@@ -414,6 +414,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         );
         els.generateStoryBtn.addEventListener('click', App.views.storybook.generateStory);
+        const generateStoryAudioBtn = document.getElementById('generate-story-audio-btn');
+        if (generateStoryAudioBtn) generateStoryAudioBtn.addEventListener('click', App.views.storybook.generateStoryAudio);
         els.playStoryBtn.addEventListener('click', () => {
             if (App.state.storyAudioUrl) new Audio(App.state.storyAudioUrl).play();
         });
