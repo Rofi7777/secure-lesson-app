@@ -166,22 +166,22 @@ App.views.platform = {
         return App.state.currentLesson.vocabulary.map((item) => {
             const translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.word;
             const phoneticHTML = item.phonetic ? '<p class="text-sm text-cyan-300">/<span data-translate-key="phoneticLabel">' + App.translations[lang].phoneticLabel + '</span>: ' + item.phonetic + '/</p>' : '';
-            // Pinyin: show for whichever text is Chinese — the word itself OR the translation
+
+            // Chinese translation + pinyin: always show when pinyin is ON
             const wordHasChinese = App.pinyin._cjkRegex && App.pinyin._cjkRegex.test(item.word);
-            const transHasChinese = App.pinyin._cjkRegex && App.pinyin._cjkRegex.test(translationText);
-            var pinyinText = '';
-            var pinyinTarget = ''; // 'word' or 'translation' — where to show pinyin
-            if (App.state.showPinyin) {
-                if (wordHasChinese) {
-                    pinyinText = item.pinyin || App.pinyin.getWordPinyin(item.word);
-                    pinyinTarget = 'word';
-                } else if (transHasChinese) {
-                    pinyinText = App.pinyin.getWordPinyin(translationText);
-                    pinyinTarget = 'translation';
+            const zhTransText = (item.translation && item.translation['zh-Hant']) ? item.translation['zh-Hant'] : '';
+            var zhLineHTML = '';
+            if (App.state.showPinyin && zhTransText) {
+                const py = item.pinyin || App.pinyin.getWordPinyin(zhTransText);
+                // Only show separate zh line if the current display doesn't already show Chinese
+                if (targetLang !== 'zh-Hant' || !wordHasChinese) {
+                    zhLineHTML = '<p class="text-sm mt-1 font-semibold text-emerald-300">' + zhTransText + '</p>' +
+                        (py ? '<p class="pinyin-line">' + py + '</p>' : '');
+                } else if (wordHasChinese && py) {
+                    // Word itself is Chinese, show pinyin under it
+                    zhLineHTML = '<p class="pinyin-line">' + py + '</p>';
                 }
             }
-            const pinyinWordHTML = (pinyinTarget === 'word' && pinyinText) ? '<p class="pinyin-line">' + pinyinText + '</p>' : '';
-            const pinyinTransHTML = (pinyinTarget === 'translation' && pinyinText) ? '<p class="pinyin-line">' + pinyinText + '</p>' : '';
 
             const exampleSentence = (item.example_sentence && typeof item.example_sentence === 'object' && item.example_sentence[targetLang])
                 ? item.example_sentence[targetLang]
@@ -191,7 +191,11 @@ App.views.platform = {
                 ? item.example_sentence
                 : '';
 
-            const exampleHTML = exampleSentence ? '<p class="text-sm italic mt-2 text-indigo-200">"<span data-translate-key="exampleLabel">' + App.translations[lang].exampleLabel + '</span>: ' + exampleSentence + '"</p>' : '';
+            // Chinese example sentence (when not viewing zh-Hant tab)
+            const zhExampleText = (App.state.showPinyin && targetLang !== 'zh-Hant' && item.example_sentence && item.example_sentence['zh-Hant']) ? item.example_sentence['zh-Hant'] : '';
+            const zhExampleHTML = zhExampleText ? '<p class="text-xs mt-1 text-emerald-200/70">"' + zhExampleText + '"</p>' : '';
+
+            const exampleHTML = exampleSentence ? '<p class="text-sm italic mt-2 text-indigo-200">"<span data-translate-key="exampleLabel">' + App.translations[lang].exampleLabel + '</span>: ' + exampleSentence + '"</p>' + zhExampleHTML : '';
 
             const wordSpeechAttr = App.utils.encodeForDataAttr(item.word || translationText);
             const vocabAudioButton = wordSpeechAttr ? '\n' +
@@ -200,8 +204,7 @@ App.views.platform = {
                 '        <div class="audio-loader"></div>\n' +
                 '    </button>' : '';
 
-            // Chinese audio button: if word is not Chinese but translation is, add a ZH play button
-            const zhTransText = (item.translation && item.translation['zh-Hant']) ? item.translation['zh-Hant'] : '';
+            // Chinese audio button
             const zhTransSpeechAttr = (!wordHasChinese && zhTransText) ? App.utils.encodeForDataAttr(zhTransText) : '';
             const zhAudioButton = zhTransSpeechAttr ? '\n' +
                 '    <button class="play-audio-btn flex-shrink-0 bg-emerald-500 hover:bg-emerald-600" data-text-to-speak="' + zhTransSpeechAttr + '" data-lesson-lang="zh-Hant" title="' + zhTransText + '">\n' +
@@ -213,10 +216,9 @@ App.views.platform = {
                 '<div class="p-4 bg-white/10 rounded-lg flex justify-between items-start">\n' +
                 '    <div class="flex-grow">\n' +
                 '        <p class="font-bold text-lg text-yellow-300">' + item.word + '</p>\n' +
-                '        ' + pinyinWordHTML + '\n' +
                 '        ' + phoneticHTML + '\n' +
                 '        <p class="text-sm mt-1 font-semibold">' + translationText + '</p>\n' +
-                '        ' + pinyinTransHTML + '\n' +
+                '        ' + zhLineHTML + '\n' +
                 '        ' + exampleHTML + '\n' +
                 '    </div>\n' +
                 '    <div class="flex flex-col gap-2 flex-shrink-0 ml-4">\n' +
@@ -232,22 +234,21 @@ App.views.platform = {
         const lang = targetLang || App.state.currentLang;
         return App.state.currentLesson.phrases.map((item) => {
             const translationText = (item.translation && item.translation[targetLang]) ? item.translation[targetLang] : item.phrase;
-            // Pinyin: show for whichever text is Chinese
             const phraseHasChinese = App.pinyin._cjkRegex && App.pinyin._cjkRegex.test(item.phrase);
-            const phraseTransHasChinese = App.pinyin._cjkRegex && App.pinyin._cjkRegex.test(translationText);
-            var phrasePinyinText = '';
-            var phrasePinyinTarget = '';
-            if (App.state.showPinyin) {
-                if (phraseHasChinese) {
-                    phrasePinyinText = item.pinyin || App.pinyin.getWordPinyin(item.phrase);
-                    phrasePinyinTarget = 'phrase';
-                } else if (phraseTransHasChinese) {
-                    phrasePinyinText = App.pinyin.getWordPinyin(translationText);
-                    phrasePinyinTarget = 'translation';
+
+            // Chinese translation + pinyin for phrases
+            const phraseZhText = (item.translation && item.translation['zh-Hant']) ? item.translation['zh-Hant'] : '';
+            var phraseZhLineHTML = '';
+            if (App.state.showPinyin && phraseZhText) {
+                const py = item.pinyin || App.pinyin.getWordPinyin(phraseZhText);
+                if (targetLang !== 'zh-Hant' || !phraseHasChinese) {
+                    phraseZhLineHTML = '<p class="text-sm mt-1 text-emerald-300">' + phraseZhText + '</p>' +
+                        (py ? '<p class="pinyin-line">' + py + '</p>' : '');
+                } else if (phraseHasChinese && py) {
+                    phraseZhLineHTML = '<p class="pinyin-line">' + py + '</p>';
                 }
             }
-            const phrasePinyinPhraseHTML = (phrasePinyinTarget === 'phrase' && phrasePinyinText) ? '\n                <p class="pinyin-line">' + phrasePinyinText + '</p>' : '';
-            const phrasePinyinTransHTML = (phrasePinyinTarget === 'translation' && phrasePinyinText) ? '\n                <p class="pinyin-line">' + phrasePinyinText + '</p>' : '';
+
             const phraseSpeechAttr = App.utils.encodeForDataAttr(item.phrase || translationText);
             const phraseAudioButton = phraseSpeechAttr ? '\n' +
                 '    <button class="play-audio-btn flex-shrink-0" data-text-to-speak="' + phraseSpeechAttr + '" data-lesson-lang="' + lang + '" title="' + (item.phrase || '') + '">\n' +
@@ -255,8 +256,6 @@ App.views.platform = {
                 '        <div class="audio-loader"></div>\n' +
                 '    </button>' : '';
 
-            // Chinese audio button for phrases
-            const phraseZhText = (item.translation && item.translation['zh-Hant']) ? item.translation['zh-Hant'] : '';
             const phraseZhSpeechAttr = (!phraseHasChinese && phraseZhText) ? App.utils.encodeForDataAttr(phraseZhText) : '';
             const phraseZhAudioButton = phraseZhSpeechAttr ? '\n' +
                 '    <button class="play-audio-btn flex-shrink-0 bg-emerald-500 hover:bg-emerald-600" data-text-to-speak="' + phraseZhSpeechAttr + '" data-lesson-lang="zh-Hant" title="' + phraseZhText + '">\n' +
@@ -268,9 +267,8 @@ App.views.platform = {
                 '<div class="p-4 bg-white/10 rounded-lg flex justify-between items-center">\n' +
                 '    <div>\n' +
                 '        <p class="font-semibold text-lg text-yellow-300">' + item.phrase + '</p>\n' +
-                '        ' + phrasePinyinPhraseHTML + '\n' +
                 '        <p class="text-sm mt-1">' + translationText + '</p>\n' +
-                '        ' + phrasePinyinTransHTML + '\n' +
+                '        ' + phraseZhLineHTML + '\n' +
                 '    </div>\n' +
                 '    <div class="flex gap-2 flex-shrink-0">\n' +
                 '        ' + phraseAudioButton + '\n' +
